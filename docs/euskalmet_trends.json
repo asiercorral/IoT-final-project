@@ -1,0 +1,941 @@
+{
+  "oid": "euskalmet/weather/regions/basque_country/zones/great_bilbao/locations/bilbao/forecast/trends/measures/at/2026/11/11/for/20261112",
+  "numericId": 0,
+  "entityVersion": 0,
+  "at": "2026-11-11T22:41:45Z",
+  "for": "2026-11-12T21:30:00Z",
+  "region": {
+    "typeId": "summarizedRegion",
+    "key": "euskalmet/geo/regions/basque_country",
+    "regionId": "basque_country"
+  },
+  "regionZone": {
+    "typeId": "summarizedRegionZone",
+    "key": "euskalmet/geo/regions/basque_country/zones/great_bilbao",
+    "regionId": "basque_country",
+    "regionZoneId": "great_bilbao"
+  },
+  "regionZoneLocation": {
+    "typeId": "summarizedRegionZoneLocation",
+    "key": "euskalmet/geo/regions/basque_country/zones/great_bilbao/locations/bilbao",
+    "regionId": "basque_country",
+    "regionZoneId": "great_bilbao",
+    "regionZoneLocationId": "bilbao"
+  },
+  "trends": {
+    "set": [
+      {
+        "range": "LocalTime:[21:00:00:000..21:59:59:999]",
+        "temperature": {
+          "value": 13.5,
+          "unit": "CELSIUS_DEGREE"
+        },
+        "precipitation": {
+          "value": 1.5,
+          "unit": "MILIMETERS"
+        },
+        "winddirection": {
+          "value": 255.0,
+          "unit": "ANGLE_DEGREE",
+          "cardinalpoint": "WEST_SOUTH_WEST"
+        },
+        "windspeed": {
+          "value": 1.7,
+          "unit": "METERS_PER_SECOND"
+        },
+        "symbolSet": {
+          "weather": {
+            "id": "12",
+            "url": "https://www.euskalmet.euskadi.eus/media/assets/icons/euskalmet/webmet00-i12n.svg",
+            "nameByLang": {
+              "SPANISH": "Lluvia débil",
+              "BASQUE": "Euri txikia"
+            },
+            "descriptionByLang": {
+              "SPANISH": "precipitación de agua líquida, con cantidades inferiores a 15 mm/h",
+              "BASQUE": "ur likidozko prezipitazioa, 15 mm/h-tik behera"
+            }
+          }
+        },
+        "shortDescription": {
+          "SPANISH": "Lluvia débil",
+          "BASQUE": "Euri txikia"
+        }
+      },
+      {
+        "range": "LocalTime:[22:00:00:000..22:59:59:999]",
+        "temperature": {
+          "value": 13.1,
+          "unit": "CELSIUS_DEGREE"
+        },
+        "precipitation": {
+          "value": 1.0,
+          "unit": "MILIMETERS"
+        },
+        "winddirection": {
+          "value": 205.0,
+          "unit": "ANGLE_DEGREE",
+          "cardinalpoint": "SOUTH_SOUTH_WEST"
+        },
+        "windspeed": {
+          "value": 1.4,
+          "unit": "METERS_PER_SECOND"
+        },
+        "symbolSet": {
+          "weather": {
+            "id": "12",
+            "url": "https://www.euskalmet.euskadi.eus/media/assets/icons/euskalmet/webmet00-i12n.svg",
+            "nameByLang": {
+              "SPANISH": "Lluvia débil",
+              "BASQUE": "Euri txikia"
+            },
+            "descriptionByLang": {
+              "SPANISH": "precipitación de agua líquida, con cantidades inferiores a 15 mm/h",
+              "BASQUE": "ur likidozko prezipitazioa, 15 mm/h-tik behera"
+            }
+          }
+        },
+        "shortDescription": {
+          "SPANISH": "Lluvia débil",
+          "BASQUE": "Euri txikia"
+        }
+      },
+      {
+        "range": "LocalTime:[16:00:00:000..16:59:59:999]",
+        "temperature": {
+          "value": 14.3,
+          "unit": "CELSIUS_DEGREE"
+        },
+        "precipitation": {
+          "value": 2.7,
+          "unit": "MILIMETERS"
+        },
+        "winddirection": {
+          "value": 331.0,
+          "unit": "ANGLE_DEGREE",
+          "cardinalpoint": "NORTH_NORTH_WEST"
+        },
+        "windspeed": {
+          "value": 3.7,
+          "unit": "METERS_PER_SECOND"
+        },
+        "symbolSet": {
+          "weather": {
+            "id": "13",
+            "url": "https://www.euskalmet.euskadi.eus/media/assets/icons/euskalmet/webmet00-i13n.svg",
+            "nameByLang": {
+              "SPANISH": "Lluvia fuerte",
+              "BASQUE": "Euri handia"
+            },
+            "descriptionByLang": {
+              "SPANISH": "precipitación de agua líquida, con cantidades superiores a 15 mm/h",
+              "BASQUE": "ur likidozko prezipitazioa, 15 mm/h-tik gora"
+            }
+          }
+        },
+        "shortDescription": {
+          "SPANISH": "Lluvia fuerte",
+          "BASQUE": "Euri handia"
+        }
+      },
+      {
+        "range": "LocalTime:[01:00:00:000..01:59:59:999]",
+        "temperature": {
+          "value": 14.2,
+          "unit": "CELSIUS_DEGREE"
+        },
+        "precipitation": {
+          "value": 1.8,
+          "unit": "MILIMETERS"
+        },
+        "winddirection": {
+          "value": 156.0,
+          "unit": "ANGLE_DEGREE",
+          "cardinalpoint": "SOUTH_SOUTH_EAST"
+        },
+        "windspeed": {
+          "value": 0.9,
+          "unit": "METERS_PER_SECOND"
+        },
+        "symbolSet": {
+          "weather": {
+            "id": "10",
+            "url": "https://www.euskalmet.euskadi.eus/media/assets/icons/euskalmet/webmet00-i10n.svg",
+            "nameByLang": {
+              "SPANISH": "Chubascos débiles",
+              "BASQUE": "Zaparrada txikiak"
+            },
+            "descriptionByLang": {
+              "SPANISH": "precipitación intensa y de corta duración, con cantidades inferiores a 15 mm/h",
+              "BASQUE": "prezipitazio zakarra eta laburra, 15 mm/h-tik behera"
+            }
+          }
+        },
+        "shortDescription": {
+          "SPANISH": "Chubascos débiles",
+          "BASQUE": "Zaparrada txikiak"
+        }
+      },
+      {
+        "range": "LocalTime:[03:00:00:000..03:59:59:999]",
+        "temperature": {
+          "value": 13.6,
+          "unit": "CELSIUS_DEGREE"
+        },
+        "precipitation": {
+          "value": 0.4,
+          "unit": "MILIMETERS"
+        },
+        "winddirection": {
+          "value": 31.0,
+          "unit": "ANGLE_DEGREE",
+          "cardinalpoint": "NORTH_NORTH_EAST"
+        },
+        "windspeed": {
+          "value": 0.9,
+          "unit": "METERS_PER_SECOND"
+        },
+        "symbolSet": {
+          "weather": {
+            "id": "10",
+            "url": "https://www.euskalmet.euskadi.eus/media/assets/icons/euskalmet/webmet00-i10n.svg",
+            "nameByLang": {
+              "SPANISH": "Chubascos débiles",
+              "BASQUE": "Zaparrada txikiak"
+            },
+            "descriptionByLang": {
+              "SPANISH": "precipitación intensa y de corta duración, con cantidades inferiores a 15 mm/h",
+              "BASQUE": "prezipitazio zakarra eta laburra, 15 mm/h-tik behera"
+            }
+          }
+        },
+        "shortDescription": {
+          "SPANISH": "Chubascos débiles",
+          "BASQUE": "Zaparrada txikiak"
+        }
+      },
+      {
+        "range": "LocalTime:[00:00:00:000..00:59:59:999]",
+        "temperature": {
+          "value": 14.7,
+          "unit": "CELSIUS_DEGREE"
+        },
+        "precipitation": {
+          "value": 0.5,
+          "unit": "MILIMETERS"
+        },
+        "winddirection": {
+          "value": 133.0,
+          "unit": "ANGLE_DEGREE",
+          "cardinalpoint": "SOUTH_EAST"
+        },
+        "windspeed": {
+          "value": 1.2,
+          "unit": "METERS_PER_SECOND"
+        },
+        "symbolSet": {
+          "weather": {
+            "id": "10",
+            "url": "https://www.euskalmet.euskadi.eus/media/assets/icons/euskalmet/webmet00-i10n.svg",
+            "nameByLang": {
+              "SPANISH": "Chubascos débiles",
+              "BASQUE": "Zaparrada txikiak"
+            },
+            "descriptionByLang": {
+              "SPANISH": "precipitación intensa y de corta duración, con cantidades inferiores a 15 mm/h",
+              "BASQUE": "prezipitazio zakarra eta laburra, 15 mm/h-tik behera"
+            }
+          }
+        },
+        "shortDescription": {
+          "SPANISH": "Chubascos débiles",
+          "BASQUE": "Zaparrada txikiak"
+        }
+      },
+      {
+        "range": "LocalTime:[07:00:00:000..07:59:59:999]",
+        "temperature": {
+          "value": 14.1,
+          "unit": "CELSIUS_DEGREE"
+        },
+        "precipitation": {
+          "value": 0.1,
+          "unit": "MILIMETERS"
+        },
+        "winddirection": {
+          "value": 261.0,
+          "unit": "ANGLE_DEGREE",
+          "cardinalpoint": "WEST"
+        },
+        "windspeed": {
+          "value": 2.3,
+          "unit": "METERS_PER_SECOND"
+        },
+        "symbolSet": {
+          "weather": {
+            "id": "10",
+            "url": "https://www.euskalmet.euskadi.eus/media/assets/icons/euskalmet/webmet00-i10n.svg",
+            "nameByLang": {
+              "SPANISH": "Chubascos débiles",
+              "BASQUE": "Zaparrada txikiak"
+            },
+            "descriptionByLang": {
+              "SPANISH": "precipitación intensa y de corta duración, con cantidades inferiores a 15 mm/h",
+              "BASQUE": "prezipitazio zakarra eta laburra, 15 mm/h-tik behera"
+            }
+          }
+        },
+        "shortDescription": {
+          "SPANISH": "Chubascos débiles",
+          "BASQUE": "Zaparrada txikiak"
+        }
+      },
+      {
+        "range": "LocalTime:[09:00:00:000..09:59:59:999]",
+        "temperature": {
+          "value": 14.6,
+          "unit": "CELSIUS_DEGREE"
+        },
+        "precipitation": {
+          "value": 0.3,
+          "unit": "MILIMETERS"
+        },
+        "winddirection": {
+          "value": 271.0,
+          "unit": "ANGLE_DEGREE",
+          "cardinalpoint": "WEST"
+        },
+        "windspeed": {
+          "value": 3.4,
+          "unit": "METERS_PER_SECOND"
+        },
+        "symbolSet": {
+          "weather": {
+            "id": "10",
+            "url": "https://www.euskalmet.euskadi.eus/media/assets/icons/euskalmet/webmet00-i10d.svg",
+            "nameByLang": {
+              "SPANISH": "Chubascos débiles",
+              "BASQUE": "Zaparrada txikiak"
+            },
+            "descriptionByLang": {
+              "SPANISH": "precipitación intensa y de corta duración, con cantidades inferiores a 15 mm/h",
+              "BASQUE": "prezipitazio zakarra eta laburra, 15 mm/h-tik behera"
+            }
+          }
+        },
+        "shortDescription": {
+          "SPANISH": "Chubascos débiles",
+          "BASQUE": "Zaparrada txikiak"
+        }
+      },
+      {
+        "range": "LocalTime:[14:00:00:000..14:59:59:999]",
+        "temperature": {
+          "value": 15.4,
+          "unit": "CELSIUS_DEGREE"
+        },
+        "precipitation": {
+          "value": 1.9,
+          "unit": "MILIMETERS"
+        },
+        "winddirection": {
+          "value": 307.0,
+          "unit": "ANGLE_DEGREE",
+          "cardinalpoint": "NORTH_WEST"
+        },
+        "windspeed": {
+          "value": 5.5,
+          "unit": "METERS_PER_SECOND"
+        },
+        "symbolSet": {
+          "weather": {
+            "id": "13",
+            "url": "https://www.euskalmet.euskadi.eus/media/assets/icons/euskalmet/webmet00-i13d.svg",
+            "nameByLang": {
+              "SPANISH": "Lluvia fuerte",
+              "BASQUE": "Euri handia"
+            },
+            "descriptionByLang": {
+              "SPANISH": "precipitación de agua líquida, con cantidades superiores a 15 mm/h",
+              "BASQUE": "ur likidozko prezipitazioa, 15 mm/h-tik gora"
+            }
+          }
+        },
+        "shortDescription": {
+          "SPANISH": "Lluvia fuerte",
+          "BASQUE": "Euri handia"
+        }
+      },
+      {
+        "range": "LocalTime:[11:00:00:000..11:59:59:999]",
+        "temperature": {
+          "value": 16.8,
+          "unit": "CELSIUS_DEGREE"
+        },
+        "precipitation": {
+          "value": 0.1,
+          "unit": "MILIMETERS"
+        },
+        "winddirection": {
+          "value": 281.0,
+          "unit": "ANGLE_DEGREE",
+          "cardinalpoint": "WEST"
+        },
+        "windspeed": {
+          "value": 5.7,
+          "unit": "METERS_PER_SECOND"
+        },
+        "symbolSet": {
+          "weather": {
+            "id": "10",
+            "url": "https://www.euskalmet.euskadi.eus/media/assets/icons/euskalmet/webmet00-i10d.svg",
+            "nameByLang": {
+              "SPANISH": "Chubascos débiles",
+              "BASQUE": "Zaparrada txikiak"
+            },
+            "descriptionByLang": {
+              "SPANISH": "precipitación intensa y de corta duración, con cantidades inferiores a 15 mm/h",
+              "BASQUE": "prezipitazio zakarra eta laburra, 15 mm/h-tik behera"
+            }
+          }
+        },
+        "shortDescription": {
+          "SPANISH": "Chubascos débiles",
+          "BASQUE": "Zaparrada txikiak"
+        }
+      },
+      {
+        "range": "LocalTime:[04:00:00:000..04:59:59:999]",
+        "temperature": {
+          "value": 13.5,
+          "unit": "CELSIUS_DEGREE"
+        },
+        "precipitation": {
+          "value": 0.8,
+          "unit": "MILIMETERS"
+        },
+        "winddirection": {
+          "value": 314.0,
+          "unit": "ANGLE_DEGREE",
+          "cardinalpoint": "NORTH_WEST"
+        },
+        "windspeed": {
+          "value": 0.7,
+          "unit": "METERS_PER_SECOND"
+        },
+        "symbolSet": {
+          "weather": {
+            "id": "10",
+            "url": "https://www.euskalmet.euskadi.eus/media/assets/icons/euskalmet/webmet00-i10n.svg",
+            "nameByLang": {
+              "SPANISH": "Chubascos débiles",
+              "BASQUE": "Zaparrada txikiak"
+            },
+            "descriptionByLang": {
+              "SPANISH": "precipitación intensa y de corta duración, con cantidades inferiores a 15 mm/h",
+              "BASQUE": "prezipitazio zakarra eta laburra, 15 mm/h-tik behera"
+            }
+          }
+        },
+        "shortDescription": {
+          "SPANISH": "Chubascos débiles",
+          "BASQUE": "Zaparrada txikiak"
+        }
+      },
+      {
+        "range": "LocalTime:[06:00:00:000..06:59:59:999]",
+        "temperature": {
+          "value": 13.6,
+          "unit": "CELSIUS_DEGREE"
+        },
+        "precipitation": {
+          "value": 0.3,
+          "unit": "MILIMETERS"
+        },
+        "winddirection": {
+          "value": 252.0,
+          "unit": "ANGLE_DEGREE",
+          "cardinalpoint": "WEST_SOUTH_WEST"
+        },
+        "windspeed": {
+          "value": 1.1,
+          "unit": "METERS_PER_SECOND"
+        },
+        "symbolSet": {
+          "weather": {
+            "id": "10",
+            "url": "https://www.euskalmet.euskadi.eus/media/assets/icons/euskalmet/webmet00-i10n.svg",
+            "nameByLang": {
+              "SPANISH": "Chubascos débiles",
+              "BASQUE": "Zaparrada txikiak"
+            },
+            "descriptionByLang": {
+              "SPANISH": "precipitación intensa y de corta duración, con cantidades inferiores a 15 mm/h",
+              "BASQUE": "prezipitazio zakarra eta laburra, 15 mm/h-tik behera"
+            }
+          }
+        },
+        "shortDescription": {
+          "SPANISH": "Chubascos débiles",
+          "BASQUE": "Zaparrada txikiak"
+        }
+      },
+      {
+        "range": "LocalTime:[10:00:00:000..10:59:59:999]",
+        "temperature": {
+          "value": 15.5,
+          "unit": "CELSIUS_DEGREE"
+        },
+        "precipitation": {
+          "value": 0.3,
+          "unit": "MILIMETERS"
+        },
+        "winddirection": {
+          "value": 276.0,
+          "unit": "ANGLE_DEGREE",
+          "cardinalpoint": "WEST"
+        },
+        "windspeed": {
+          "value": 4.4,
+          "unit": "METERS_PER_SECOND"
+        },
+        "symbolSet": {
+          "weather": {
+            "id": "10",
+            "url": "https://www.euskalmet.euskadi.eus/media/assets/icons/euskalmet/webmet00-i10d.svg",
+            "nameByLang": {
+              "SPANISH": "Chubascos débiles",
+              "BASQUE": "Zaparrada txikiak"
+            },
+            "descriptionByLang": {
+              "SPANISH": "precipitación intensa y de corta duración, con cantidades inferiores a 15 mm/h",
+              "BASQUE": "prezipitazio zakarra eta laburra, 15 mm/h-tik behera"
+            }
+          }
+        },
+        "shortDescription": {
+          "SPANISH": "Chubascos débiles",
+          "BASQUE": "Zaparrada txikiak"
+        }
+      },
+      {
+        "range": "LocalTime:[20:00:00:000..20:59:59:999]",
+        "temperature": {
+          "value": 13.7,
+          "unit": "CELSIUS_DEGREE"
+        },
+        "precipitation": {
+          "value": 1.5,
+          "unit": "MILIMETERS"
+        },
+        "winddirection": {
+          "value": 334.0,
+          "unit": "ANGLE_DEGREE",
+          "cardinalpoint": "NORTH_NORTH_WEST"
+        },
+        "windspeed": {
+          "value": 1.6,
+          "unit": "METERS_PER_SECOND"
+        },
+        "symbolSet": {
+          "weather": {
+            "id": "12",
+            "url": "https://www.euskalmet.euskadi.eus/media/assets/icons/euskalmet/webmet00-i12n.svg",
+            "nameByLang": {
+              "SPANISH": "Lluvia débil",
+              "BASQUE": "Euri txikia"
+            },
+            "descriptionByLang": {
+              "SPANISH": "precipitación de agua líquida, con cantidades inferiores a 15 mm/h",
+              "BASQUE": "ur likidozko prezipitazioa, 15 mm/h-tik behera"
+            }
+          }
+        },
+        "shortDescription": {
+          "SPANISH": "Lluvia débil",
+          "BASQUE": "Euri txikia"
+        }
+      },
+      {
+        "range": "LocalTime:[18:00:00:000..18:59:59:999]",
+        "temperature": {
+          "value": 13.7,
+          "unit": "CELSIUS_DEGREE"
+        },
+        "precipitation": {
+          "value": 4.0,
+          "unit": "MILIMETERS"
+        },
+        "winddirection": {
+          "value": 329.0,
+          "unit": "ANGLE_DEGREE",
+          "cardinalpoint": "NORTH_NORTH_WEST"
+        },
+        "windspeed": {
+          "value": 3.1,
+          "unit": "METERS_PER_SECOND"
+        },
+        "symbolSet": {
+          "weather": {
+            "id": "13",
+            "url": "https://www.euskalmet.euskadi.eus/media/assets/icons/euskalmet/webmet00-i13n.svg",
+            "nameByLang": {
+              "SPANISH": "Lluvia fuerte",
+              "BASQUE": "Euri handia"
+            },
+            "descriptionByLang": {
+              "SPANISH": "precipitación de agua líquida, con cantidades superiores a 15 mm/h",
+              "BASQUE": "ur likidozko prezipitazioa, 15 mm/h-tik gora"
+            }
+          }
+        },
+        "shortDescription": {
+          "SPANISH": "Lluvia fuerte",
+          "BASQUE": "Euri handia"
+        }
+      },
+      {
+        "range": "LocalTime:[17:00:00:000..17:59:59:999]",
+        "temperature": {
+          "value": 14.0,
+          "unit": "CELSIUS_DEGREE"
+        },
+        "precipitation": {
+          "value": 3.4,
+          "unit": "MILIMETERS"
+        },
+        "winddirection": {
+          "value": 303.0,
+          "unit": "ANGLE_DEGREE",
+          "cardinalpoint": "WEST_NORTH_WEST"
+        },
+        "windspeed": {
+          "value": 3.5,
+          "unit": "METERS_PER_SECOND"
+        },
+        "symbolSet": {
+          "weather": {
+            "id": "13",
+            "url": "https://www.euskalmet.euskadi.eus/media/assets/icons/euskalmet/webmet00-i13n.svg",
+            "nameByLang": {
+              "SPANISH": "Lluvia fuerte",
+              "BASQUE": "Euri handia"
+            },
+            "descriptionByLang": {
+              "SPANISH": "precipitación de agua líquida, con cantidades superiores a 15 mm/h",
+              "BASQUE": "ur likidozko prezipitazioa, 15 mm/h-tik gora"
+            }
+          }
+        },
+        "shortDescription": {
+          "SPANISH": "Lluvia fuerte",
+          "BASQUE": "Euri handia"
+        }
+      },
+      {
+        "range": "LocalTime:[23:00:00:000..23:59:59:999]",
+        "temperature": {
+          "value": 13.0,
+          "unit": "CELSIUS_DEGREE"
+        },
+        "precipitation": {
+          "value": 0.7,
+          "unit": "MILIMETERS"
+        },
+        "winddirection": {
+          "value": 212.0,
+          "unit": "ANGLE_DEGREE",
+          "cardinalpoint": "SOUTH_SOUTH_WEST"
+        },
+        "windspeed": {
+          "value": 0.7,
+          "unit": "METERS_PER_SECOND"
+        },
+        "symbolSet": {
+          "weather": {
+            "id": "12",
+            "url": "https://www.euskalmet.euskadi.eus/media/assets/icons/euskalmet/webmet00-i12n.svg",
+            "nameByLang": {
+              "SPANISH": "Lluvia débil",
+              "BASQUE": "Euri txikia"
+            },
+            "descriptionByLang": {
+              "SPANISH": "precipitación de agua líquida, con cantidades inferiores a 15 mm/h",
+              "BASQUE": "ur likidozko prezipitazioa, 15 mm/h-tik behera"
+            }
+          }
+        },
+        "shortDescription": {
+          "SPANISH": "Lluvia débil",
+          "BASQUE": "Euri txikia"
+        }
+      },
+      {
+        "range": "LocalTime:[02:00:00:000..02:59:59:999]",
+        "temperature": {
+          "value": 13.9,
+          "unit": "CELSIUS_DEGREE"
+        },
+        "precipitation": {
+          "value": 0.4,
+          "unit": "MILIMETERS"
+        },
+        "winddirection": {
+          "value": 81.0,
+          "unit": "ANGLE_DEGREE",
+          "cardinalpoint": "EAST"
+        },
+        "windspeed": {
+          "value": 0.7,
+          "unit": "METERS_PER_SECOND"
+        },
+        "symbolSet": {
+          "weather": {
+            "id": "10",
+            "url": "https://www.euskalmet.euskadi.eus/media/assets/icons/euskalmet/webmet00-i10n.svg",
+            "nameByLang": {
+              "SPANISH": "Chubascos débiles",
+              "BASQUE": "Zaparrada txikiak"
+            },
+            "descriptionByLang": {
+              "SPANISH": "precipitación intensa y de corta duración, con cantidades inferiores a 15 mm/h",
+              "BASQUE": "prezipitazio zakarra eta laburra, 15 mm/h-tik behera"
+            }
+          }
+        },
+        "shortDescription": {
+          "SPANISH": "Chubascos débiles",
+          "BASQUE": "Zaparrada txikiak"
+        }
+      },
+      {
+        "range": "LocalTime:[08:00:00:000..08:59:59:999]",
+        "temperature": {
+          "value": 14.7,
+          "unit": "CELSIUS_DEGREE"
+        },
+        "precipitation": {
+          "value": 0.0,
+          "unit": "MILIMETERS"
+        },
+        "winddirection": {
+          "value": 274.0,
+          "unit": "ANGLE_DEGREE",
+          "cardinalpoint": "WEST"
+        },
+        "windspeed": {
+          "value": 4.9,
+          "unit": "METERS_PER_SECOND"
+        },
+        "symbolSet": {
+          "weather": {
+            "id": "01",
+            "url": "https://www.euskalmet.euskadi.eus/media/assets/icons/euskalmet/webmet00-i01d.svg",
+            "nameByLang": {
+              "SPANISH": "Poco nuboso",
+              "BASQUE": "Hodei gutxi"
+            },
+            "descriptionByLang": {
+              "SPANISH": "entre 1/8 y 2/8 de cielo cubierto",
+              "BASQUE": "zeruaren 1/8etik 2/8era estalita"
+            }
+          }
+        },
+        "shortDescription": {
+          "SPANISH": "Poco nuboso",
+          "BASQUE": "Hodei gutxi"
+        }
+      },
+      {
+        "range": "LocalTime:[15:00:00:000..15:59:59:999]",
+        "temperature": {
+          "value": 14.6,
+          "unit": "CELSIUS_DEGREE"
+        },
+        "precipitation": {
+          "value": 2.7,
+          "unit": "MILIMETERS"
+        },
+        "winddirection": {
+          "value": 317.0,
+          "unit": "ANGLE_DEGREE",
+          "cardinalpoint": "NORTH_WEST"
+        },
+        "windspeed": {
+          "value": 4.5,
+          "unit": "METERS_PER_SECOND"
+        },
+        "symbolSet": {
+          "weather": {
+            "id": "13",
+            "url": "https://www.euskalmet.euskadi.eus/media/assets/icons/euskalmet/webmet00-i13d.svg",
+            "nameByLang": {
+              "SPANISH": "Lluvia fuerte",
+              "BASQUE": "Euri handia"
+            },
+            "descriptionByLang": {
+              "SPANISH": "precipitación de agua líquida, con cantidades superiores a 15 mm/h",
+              "BASQUE": "ur likidozko prezipitazioa, 15 mm/h-tik gora"
+            }
+          }
+        },
+        "shortDescription": {
+          "SPANISH": "Lluvia fuerte",
+          "BASQUE": "Euri handia"
+        }
+      },
+      {
+        "range": "LocalTime:[12:00:00:000..12:59:59:999]",
+        "temperature": {
+          "value": 17.0,
+          "unit": "CELSIUS_DEGREE"
+        },
+        "precipitation": {
+          "value": 0.2,
+          "unit": "MILIMETERS"
+        },
+        "winddirection": {
+          "value": 285.0,
+          "unit": "ANGLE_DEGREE",
+          "cardinalpoint": "WEST_NORTH_WEST"
+        },
+        "windspeed": {
+          "value": 6.3,
+          "unit": "METERS_PER_SECOND"
+        },
+        "symbolSet": {
+          "weather": {
+            "id": "10",
+            "url": "https://www.euskalmet.euskadi.eus/media/assets/icons/euskalmet/webmet00-i10d.svg",
+            "nameByLang": {
+              "SPANISH": "Chubascos débiles",
+              "BASQUE": "Zaparrada txikiak"
+            },
+            "descriptionByLang": {
+              "SPANISH": "precipitación intensa y de corta duración, con cantidades inferiores a 15 mm/h",
+              "BASQUE": "prezipitazio zakarra eta laburra, 15 mm/h-tik behera"
+            }
+          }
+        },
+        "shortDescription": {
+          "SPANISH": "Chubascos débiles",
+          "BASQUE": "Zaparrada txikiak"
+        }
+      },
+      {
+        "range": "LocalTime:[05:00:00:000..05:59:59:999]",
+        "temperature": {
+          "value": 13.5,
+          "unit": "CELSIUS_DEGREE"
+        },
+        "precipitation": {
+          "value": 0.6,
+          "unit": "MILIMETERS"
+        },
+        "winddirection": {
+          "value": 270.0,
+          "unit": "ANGLE_DEGREE",
+          "cardinalpoint": "WEST"
+        },
+        "windspeed": {
+          "value": 1.3,
+          "unit": "METERS_PER_SECOND"
+        },
+        "symbolSet": {
+          "weather": {
+            "id": "10",
+            "url": "https://www.euskalmet.euskadi.eus/media/assets/icons/euskalmet/webmet00-i10n.svg",
+            "nameByLang": {
+              "SPANISH": "Chubascos débiles",
+              "BASQUE": "Zaparrada txikiak"
+            },
+            "descriptionByLang": {
+              "SPANISH": "precipitación intensa y de corta duración, con cantidades inferiores a 15 mm/h",
+              "BASQUE": "prezipitazio zakarra eta laburra, 15 mm/h-tik behera"
+            }
+          }
+        },
+        "shortDescription": {
+          "SPANISH": "Chubascos débiles",
+          "BASQUE": "Zaparrada txikiak"
+        }
+      },
+      {
+        "range": "LocalTime:[13:00:00:000..13:59:59:999]",
+        "temperature": {
+          "value": 16.1,
+          "unit": "CELSIUS_DEGREE"
+        },
+        "precipitation": {
+          "value": 1.1,
+          "unit": "MILIMETERS"
+        },
+        "winddirection": {
+          "value": 293.0,
+          "unit": "ANGLE_DEGREE",
+          "cardinalpoint": "WEST_NORTH_WEST"
+        },
+        "windspeed": {
+          "value": 6.2,
+          "unit": "METERS_PER_SECOND"
+        },
+        "symbolSet": {
+          "weather": {
+            "id": "12",
+            "url": "https://www.euskalmet.euskadi.eus/media/assets/icons/euskalmet/webmet00-i12d.svg",
+            "nameByLang": {
+              "SPANISH": "Lluvia débil",
+              "BASQUE": "Euri txikia"
+            },
+            "descriptionByLang": {
+              "SPANISH": "precipitación de agua líquida, con cantidades inferiores a 15 mm/h",
+              "BASQUE": "ur likidozko prezipitazioa, 15 mm/h-tik behera"
+            }
+          }
+        },
+        "shortDescription": {
+          "SPANISH": "Lluvia débil",
+          "BASQUE": "Euri txikia"
+        }
+      },
+      {
+        "range": "LocalTime:[19:00:00:000..19:59:59:999]",
+        "temperature": {
+          "value": 13.7,
+          "unit": "CELSIUS_DEGREE"
+        },
+        "precipitation": {
+          "value": 2.2,
+          "unit": "MILIMETERS"
+        },
+        "winddirection": {
+          "value": 322.0,
+          "unit": "ANGLE_DEGREE",
+          "cardinalpoint": "NORTH_WEST"
+        },
+        "windspeed": {
+          "value": 2.3,
+          "unit": "METERS_PER_SECOND"
+        },
+        "symbolSet": {
+          "weather": {
+            "id": "13",
+            "url": "https://www.euskalmet.euskadi.eus/media/assets/icons/euskalmet/webmet00-i13n.svg",
+            "nameByLang": {
+              "SPANISH": "Lluvia fuerte",
+              "BASQUE": "Euri handia"
+            },
+            "descriptionByLang": {
+              "SPANISH": "precipitación de agua líquida, con cantidades superiores a 15 mm/h",
+              "BASQUE": "ur likidozko prezipitazioa, 15 mm/h-tik gora"
+            }
+          }
+        },
+        "shortDescription": {
+          "SPANISH": "Lluvia fuerte",
+          "BASQUE": "Euri handia"
+        }
+      }
+    ]
+  }
+}
