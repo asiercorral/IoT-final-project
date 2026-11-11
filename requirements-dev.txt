@@ -1,0 +1,2 @@
+# Tools for developing and testing on a laptop (no Pi needed).
+pytest>=7
