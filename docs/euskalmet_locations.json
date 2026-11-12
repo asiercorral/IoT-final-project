@@ -1,0 +1,44 @@
+[
+  {
+    "key": "euskalmet/geo/regions/basque_country/zones/great_bilbao/locations/barakaldo",
+    "regionId": "basque_country",
+    "regionZoneId": "great_bilbao",
+    "regionZoneLocationId": "barakaldo"
+  },
+  {
+    "key": "euskalmet/geo/regions/basque_country/zones/great_bilbao/locations/bilbao",
+    "regionId": "basque_country",
+    "regionZoneId": "great_bilbao",
+    "regionZoneLocationId": "bilbao"
+  },
+  {
+    "key": "euskalmet/geo/regions/basque_country/zones/great_bilbao/locations/erandio",
+    "regionId": "basque_country",
+    "regionZoneId": "great_bilbao",
+    "regionZoneLocationId": "erandio"
+  },
+  {
+    "key": "euskalmet/geo/regions/basque_country/zones/great_bilbao/locations/getxo",
+    "regionId": "basque_country",
+    "regionZoneId": "great_bilbao",
+    "regionZoneLocationId": "getxo"
+  },
+  {
+    "key": "euskalmet/geo/regions/basque_country/zones/great_bilbao/locations/leioa",
+    "regionId": "basque_country",
+    "regionZoneId": "great_bilbao",
+    "regionZoneLocationId": "leioa"
+  },
+  {
+    "key": "euskalmet/geo/regions/basque_country/zones/great_bilbao/locations/portugalete",
+    "regionId": "basque_country",
+    "regionZoneId": "great_bilbao",
+    "regionZoneLocationId": "portugalete"
+  },
+  {
+    "key": "euskalmet/geo/regions/basque_country/zones/great_bilbao/locations/sestao",
+    "regionId": "basque_country",
+    "regionZoneId": "great_bilbao",
+    "regionZoneLocationId": "sestao"
+  }
+]

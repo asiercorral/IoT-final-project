@@ -1,0 +1,52 @@
+[
+  {
+    "key": "euskalmet/geo/regions/basque_country/zones/cantabrian_mountains",
+    "regionId": "basque_country",
+    "regionZoneId": "cantabrian_mountains"
+  },
+  {
+    "key": "euskalmet/geo/regions/basque_country/zones/cantabrian_valleys",
+    "regionId": "basque_country",
+    "regionZoneId": "cantabrian_valleys"
+  },
+  {
+    "key": "euskalmet/geo/regions/basque_country/zones/coast_zone",
+    "regionId": "basque_country",
+    "regionZoneId": "coast_zone"
+  },
+  {
+    "key": "euskalmet/geo/regions/basque_country/zones/donostialdea",
+    "regionId": "basque_country",
+    "regionZoneId": "donostialdea"
+  },
+  {
+    "key": "euskalmet/geo/regions/basque_country/zones/ebro_valley",
+    "regionId": "basque_country",
+    "regionZoneId": "ebro_valley"
+  },
+  {
+    "key": "euskalmet/geo/regions/basque_country/zones/great_bilbao",
+    "regionId": "basque_country",
+    "regionZoneId": "great_bilbao"
+  },
+  {
+    "key": "euskalmet/geo/regions/basque_country/zones/interior_basins",
+    "regionId": "basque_country",
+    "regionZoneId": "interior_basins"
+  },
+  {
+    "key": "euskalmet/geo/regions/basque_country/zones/pyrenees",
+    "regionId": "basque_country",
+    "regionZoneId": "pyrenees"
+  },
+  {
+    "key": "euskalmet/geo/regions/basque_country/zones/southern_mountain",
+    "regionId": "basque_country",
+    "regionZoneId": "southern_mountain"
+  },
+  {
+    "key": "euskalmet/geo/regions/basque_country/zones/vitoria_gasteiz",
+    "regionId": "basque_country",
+    "regionZoneId": "vitoria_gasteiz"
+  }
+]

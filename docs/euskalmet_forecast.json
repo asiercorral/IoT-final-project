@@ -1,0 +1,38 @@
+{
+  "oid": "euskalmet/weather/regions/basque_country/zones/great_bilbao/locations/bilbao/forecast/at/2026/11/11/for/20261112",
+  "numericId": 0,
+  "entityVersion": 0,
+  "at": "2026-11-11T22:41:45Z",
+  "for": "2026-11-12T21:30:00Z",
+  "region": {
+    "typeId": "summarizedRegion",
+    "key": "euskalmet/geo/regions/basque_country",
+    "regionId": "basque_country"
+  },
+  "regionZone": {
+    "typeId": "summarizedRegionZone",
+    "key": "euskalmet/geo/regions/basque_country/zones/great_bilbao",
+    "regionId": "basque_country",
+    "regionZoneId": "great_bilbao"
+  },
+  "regionZoneLocation": {
+    "typeId": "summarizedRegionZoneLocation",
+    "key": "euskalmet/geo/regions/basque_country/zones/great_bilbao/locations/bilbao",
+    "regionId": "basque_country",
+    "regionZoneId": "great_bilbao",
+    "regionZoneLocationId": "bilbao"
+  },
+  "temperature": {
+    "value": 15.0,
+    "unit": "CELSIUS_DEGREE"
+  },
+  "temperatureRange": {
+    "min": 13.0,
+    "max": 17.0,
+    "unit": "CELSIUS_DEGREE"
+  },
+  "forecastText": {
+    "SPANISH": "Cielo muy nuboso. Chubascos débiles a moderados, localmente abundantes y frecuentes. Viento flojo a moderado de componente este, girando a oeste-suroeste moderado por la mañana con algunas rachas muy fuertes, y a oeste-noroeste por la tarde; irá perdiendo fuerza. Temperatura en ligero a moderado descenso.",
+    "BASQUE": "Zerua oso hodeitsu egongo da. Zaparrada txiki-ertainak egingo ditu; zenbait lekutan euria ugari eta sarri egingo du. Eki-osagaiko haize bizia ibiliko da, bolada gogorrekin; goizean mendebal/hego-mendebaldera aldatuko da bolada oso gogor batzuekin eta arratsaldean mendebal/ipar-mendebaldera aldatuko da eta indarra galtzen joango da. Tenperatura gutxi edo nahikoa jaitsiko da."
+  }
+}
