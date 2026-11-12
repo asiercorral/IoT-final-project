@@ -1,0 +1,6 @@
+# Runtime dependencies on the Raspberry Pi.
+#
+# The Grove libraries used by plantpulse/sensors.py (grove.py and seeed_dht)
+# are installed on the Pi as in Lab 4, not from this file.
+#
+# Add each package here in the pull request that first imports it.
