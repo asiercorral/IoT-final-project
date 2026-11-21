@@ -23,7 +23,7 @@ try:                                # read SOIL_DRY / SOIL_WET from .env if avai
 except ImportError:
     pass
 
-from plantpulse import config, state
+from plantpulse import config, state 
 SOIL_CH = int(os.getenv("SOIL_CH", "0"))        # Grove port A0
 SOIL_DRY = int(os.getenv("SOIL_DRY", "147"))   # raw value in dry substrate
 SOIL_WET = int(os.getenv("SOIL_WET", "2461"))   # raw value in wet substrate
