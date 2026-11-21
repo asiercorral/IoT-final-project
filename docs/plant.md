@@ -26,8 +26,8 @@ These two cups give the raw reference values for the soil probe (T-12, T-16).
 
 | Sample | How to prepare | Used as |
 | --- | --- | --- |
-| Dry cup | Fill with substrate, leave uncovered indoors for 2–3 days until dry to the touch | `SOIL_DRY` reference |
-| Wet cup | Fill with substrate, water until water drains from the bottom, wait 10 min | `SOIL_WET` reference |
+| Dry cup | Fill with substrate, leave uncovered indoors for 2–3 days until dry to the touch | `PLANTPULSE_SOIL_DRY_MV` reference |
+| Wet cup | Fill with substrate, water until water drains from the bottom, wait 10 min | `PLANTPULSE_SOIL_WET_MV` reference |
 
 Both cups need drainage holes and should be filled to at least the depth of the probe's sensing area.
 

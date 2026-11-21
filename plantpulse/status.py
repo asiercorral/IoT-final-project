@@ -5,9 +5,10 @@ Run on the Raspberry Pi from the repository root, with the Grove venv active:
     python3 -m plantpulse.status              # print only
     python3 -m plantpulse.status --publish    # print and publish to MQTT
 
-Calibration values are read from .env (see .env.example) or from the
-command line, e.g.:
-    SOIL_DRY=2850 SOIL_WET=1350 python3 -m plantpulse.status
+The soil probe is read in mV, like sensors.py, and turned into a percentage
+with the same calibration as the rule engine: PLANTPULSE_SOIL_DRY_MV and
+PLANTPULSE_SOIL_WET_MV in .env (see .env.example), e.g.:
+    PLANTPULSE_SOIL_DRY_MV=120 PLANTPULSE_SOIL_WET_MV=1980 python3 -m plantpulse.status
 
 The rule engine (T-24) will take over publishing the state; until then this
 gives the LED bar a real state from the soil probe.
@@ -17,18 +18,9 @@ import os
 import statistics
 import time
 
-try:                                # read SOIL_DRY / SOIL_WET from .env if available
-    from dotenv import load_dotenv
-    load_dotenv()
-except ImportError:
-    pass
-
-from plantpulse import config, state 
-SOIL_CH = int(os.getenv("SOIL_CH", "0"))        # Grove port A0
-SOIL_DRY = int(os.getenv("SOIL_DRY", "147"))   # raw value in dry substrate
-SOIL_WET = int(os.getenv("SOIL_WET", "2461"))   # raw value in wet substrate
-
+from plantpulse import config, state
 from plantpulse.profile import load_profile
+from plantpulse.rule_engine import soil_index
 
 # Thresholds come from the plant profile (T-23), chosen with PLANTPULSE_PLANT
 PROFILE = load_profile()
@@ -41,25 +33,24 @@ _adc = None
 
 
 def soil_raw():
-    """Median of 5 reads to reduce noise. None if the probe seems unplugged."""
+    """Soil probe voltage in mV, median of 5 reads to reduce noise.
+
+    Same unit as ``soil_moisture_raw`` from sensors.py. None if the probe
+    seems unplugged.
+    """
     global _adc
     if _adc is None:                 # opened on first use, so tests need no Grove library
         from grove.adc import ADC
         _adc = ADC()
-    raw = statistics.median(_adc.read_raw(SOIL_CH) for _ in range(5))
-    if raw <= 5 or raw >= 4090:      # 0 or 4095: nothing connected
+    mv = statistics.median(_adc.read_voltage(config.SOIL_ADC_CHANNEL) for _ in range(5))
+    if mv <= 5 or mv >= 3295:        # about 0 V or the full 3.3 V: nothing connected
         return None
-    return int(raw)
+    return int(mv)
 
 
-def soil_pct(raw):
-    """Map the raw value to 0-100 % between our dry and wet references.
-
-    Works for both probe types: capacitive probes read higher when dry,
-    resistive probes read higher when wet.
-    """
-    pct = (SOIL_DRY - raw) / (SOIL_DRY - SOIL_WET) * 100
-    return round(min(max(pct, 0), 100), 1)
+def soil_pct(mv):
+    """Moisture index 0-100 % with the shared calibration (rule_engine.soil_index)."""
+    return soil_index(mv)
 
 
 def basic_status(pct):
@@ -100,8 +91,8 @@ if __name__ == "__main__":
     parser.add_argument("--port", type=int, default=config.MQTT_PORT)
     args = parser.parse_args()
 
-    if SOIL_DRY == SOIL_WET:
-        raise SystemExit("SOIL_DRY and SOIL_WET must be different: check your .env")
+    if config.SOIL_DRY_MV == config.SOIL_WET_MV:
+        raise SystemExit("PLANTPULSE_SOIL_DRY_MV and PLANTPULSE_SOIL_WET_MV must be different: check your .env")
 
     client = None
     if args.publish:
@@ -112,7 +103,8 @@ if __name__ == "__main__":
         except OSError as exc:
             raise SystemExit(f"Cannot reach the MQTT broker at {args.host}:{args.port} ({exc})")
 
-    print(f"Soil status every {INTERVAL_S} s (dry={SOIL_DRY}, wet={SOIL_WET}). Ctrl+C to stop.")
+    print(f"Soil status every {INTERVAL_S} s (dry={config.SOIL_DRY_MV} mV, "
+          f"wet={config.SOIL_WET_MV} mV). Ctrl+C to stop.")
     try:
         while True:
             try:
@@ -121,7 +113,7 @@ if __name__ == "__main__":
                 raw = None
             pct = soil_pct(raw) if raw is not None else None
             status = basic_status(pct)
-            print(f"{time.strftime('%H:%M:%S')}  raw={raw}  soil={pct}%  -> {status}")
+            print(f"{time.strftime('%H:%M:%S')}  soil={raw} mV  {pct}%  -> {status}")
             if client is not None:
                 state.publish_state(client, state.build_state(status, basic_reason(pct)))
             time.sleep(INTERVAL_S)

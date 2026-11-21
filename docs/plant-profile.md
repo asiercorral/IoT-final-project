@@ -16,10 +16,29 @@ All values are **starting values**. Adjust them after calibration (T-12) and aft
  
 The soil value is a relative index, not a water content:
  
-- **0 %** = the dry calibration cup (`SOIL_DRY`)
-- **100 %** = the wet calibration cup, watered until it drains and left 10 min (`SOIL_WET`). This is *container capacity*: the most water the substrate holds after drainage.
+- **0 %** = the dry calibration cup (`PLANTPULSE_SOIL_DRY_MV`)
+- **100 %** = the waterlogged calibration cup (`PLANTPULSE_SOIL_WET_MV`): watered until water stands.
+(`PLANTPULSE_SOIL_WET_MV`). This is *container capacity*: the most water the substrate holds after drainage.
 Research gives thresholds as volumetric water content (VWC) or soil tension, so we converted them. Peat-based potting substrates hold roughly 45–65 % VWC at container capacity [4, 5]; we assume about 60 %, and some water left in the air-dried cup. A VWC of 0.30 is then roughly an index of 45–50 %, and 0.15 roughly 20–25 %. The conversion is approximate; calibration with the real plant decides.
  
+### Calibration of our probe (T-12)
+
+Measured on 2026-11-15 by @Ibonerdoiza2004 with the Grove soil moisture sensor in our basil substrate, 12 readings each, 10 s apart. Raw files: `docs/calibration/`.
+
+| File | Sample | Median | Spread | Index | Setting |
+| --- | --- | --- | --- | --- | --- |
+| `dry.csv` | Dry substrate | 118 mV | 107–128 mV | 0 % | `PLANTPULSE_SOIL_DRY_MV=118` |
+| `wet.csv` | Normally watered ("sweet spot") | 1197 mV | 1185–1214 mV | 58 % | check value |
+| `waterlogged.csv` | Watered until water stands | 1989 mV | 1936–1997 mV | 100 % | `PLANTPULSE_SOIL_WET_MV=1989` |
+
+The probe reads higher when wetter. The first readings after inserting the probe were still settling and are left out of the medians for the two wet samples. One reading moves by about 10–20 mV, which is about 1 index point.
+
+**Our scale differs from the literature.** In the sources, 100 % is container capacity: the water the substrate holds after draining. Our 100 % is waterlogged substrate, which holds more. Drained substrate therefore reads somewhat below 100 %, so `dry_below_pct` triggers a little earlier than the literature values suggest. That errs on the safe side.
+
+**Check of the scale.** Normally watered substrate lands at 58 %, inside the Normal range for basil (45–90 %); basil grew best at about 60–75 % of container capacity [1]. Only standing water reaches about 100 %: soil at 97 % or more for `saturated_h` gives `ATTENTION_WET`, and above 90 % for `wet_check_h` gives `CHECK_WET`.
+
+**Optional.** Measuring a cup 10 min after watering (drained) would show where normal watering lands on this scale.
+
 ## Values and their sources
  
 ### Soil: too dry
@@ -98,4 +117,4 @@ Both plants need a lot of light; basil grows best at a daily light integral of a
 | --- | --- | --- | --- |
 | 2026-11-21 | basil, basil_demo, tomato | First values | From the sources above, before calibration |
 | 2026-11-21 | basil, basil_demo, tomato | Air temperature changes the state: `severe_cold_below_c` and `duration_h` added | Team decision; values from sources [8]–[12] |
- 
+| 2026-11-21 | all | Soil calibration from T-12 measurements: 0 % = 118 mV (dry), 100 % = 1989 mV (waterlogged) | Measured; see Calibration of our probe |

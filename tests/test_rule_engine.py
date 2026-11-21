@@ -270,3 +270,11 @@ def test_missing_values_in_the_csv_become_none(tmp_path):
 
 def test_no_csv_means_no_result(tmp_path, basil):
     assert rule_engine.evaluate_latest(tmp_path / "missing.csv", basil, clock=lambda: NOW) is None
+
+
+def test_status_py_uses_the_same_calibration():
+    # status.py (T-16) and the rule engine must turn the same mV into the same %
+    from plantpulse import config, status
+
+    for mv in (config.SOIL_DRY_MV, 500, 1200, config.SOIL_WET_MV):
+        assert status.soil_pct(mv) == rule_engine.soil_index(mv)
