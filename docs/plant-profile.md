@@ -42,17 +42,20 @@ Research gives thresholds as volumetric water content (VWC) or soil tension, so 
  
 Right after watering the index is near 100 %, which is normal. Too much water only harms roots when the substrate **stays** wet: water fills the pores and the roots get no oxygen. If the air-filled pore space stays low, substrates become waterlogged and root diseases follow [5]. In tomato, stomata close after 24 h of flooding [6], and the leaves start to curl down between 24 and 48 h [7]. This is why the wet states use a duration and not a single reading. The values are the same for both plants because no plant-specific study was found; adjust them after watching how fast the demo pot dries.
  
-### Air temperature (context only, no LED state)
- 
+### Air temperature
+
 | Key | Basil | Tomato | Meaning |
 | --- | --- | --- | --- |
-| `air.cold_below_c` | 12 | 10 | Below this the web page adds a warning to the reason. |
-| `air.hot_above_c` | 35 | 32 | Above this the web page adds a warning to the reason. |
- 
-Temperature and humidity are context, not LED triggers (README, "Behaviour to preserve"). A cold or hot note helps pupils understand what they see.
+| `air.severe_cold_below_c` | 5 | 5 | Colder than this for `duration_h`: **Attention**, move or cover the plant. |
+| `air.cold_below_c` | 12 | 10 | Colder than this for `duration_h`: **Check**, look for cold damage on the leaves. |
+| `air.hot_above_c` | 35 | 32 | Hotter than this for `duration_h`: **Check**, the soil dries out faster. |
+| `air.duration_h` | 0.5 | 0.5 | How long a limit must be crossed without a break. One reading near a limit is not enough: the DHT11 is only accurate to about ±2 °C, and the screen should not jump. `basil_demo` uses 0.05 h (3 min). |
+
+The team decided on 2026-11-21 that air temperature changes the state (before, it was context only). Humidity stays context.
  
 - **Basil** is chilling-sensitive: injury occurs at or below 10 °C and is severe at or below 5 °C [8]; other sources put the limit at 12 °C [9]. We use 12 °C. The hot limit (35 °C) is our own assumption; basil grows best in the mid- to upper-80s °F (about 29–31 °C) [10] and no reliable upper limit was found.
 - **Tomato**: temperatures above 32 °C harm fruit set, and below 10 °C growth suffers [11]. Chilling injury is reported between 0 and 5 °C [12].
+
 ### Light
  
 | Key | Basil | Tomato | Meaning |

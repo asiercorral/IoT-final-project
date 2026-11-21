@@ -69,3 +69,15 @@ def test_cold_must_be_below_hot(good):
     good["air"]["cold_below_c"] = 40
     with pytest.raises(ProfileError, match="cold_below_c"):
         validate(good)
+
+
+def test_severe_cold_must_be_below_cold(good):
+    good["air"]["severe_cold_below_c"] = 15
+    with pytest.raises(ProfileError, match="severe_cold_below_c"):
+        validate(good)
+
+
+def test_air_duration_must_be_positive(good):
+    good["air"]["duration_h"] = 0
+    with pytest.raises(ProfileError, match="duration_h"):
+        validate(good)

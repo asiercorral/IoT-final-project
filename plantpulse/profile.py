@@ -27,7 +27,7 @@ REQUIRED = {
         "saturated_h",
     ),
     "light": ("low_below_pct", "afternoon_from_h", "afternoon_to_h", "low_afternoons"),
-    "air": ("cold_below_c", "hot_above_c"),
+    "air": ("severe_cold_below_c", "cold_below_c", "hot_above_c", "duration_h"),
     "rain": ("min_mm", "window_h"),
 }
 
@@ -77,8 +77,12 @@ def validate(profile, name="profile"):
         raise ProfileError(f"{name}: light.low_afternoons must be at least 1")
 
     air = profile["air"]
-    if not air["cold_below_c"] < air["hot_above_c"]:
-        raise ProfileError(f"{name}: air.cold_below_c must be below air.hot_above_c")
+    if not air["severe_cold_below_c"] < air["cold_below_c"] < air["hot_above_c"]:
+        raise ProfileError(
+            f"{name}: air needs severe_cold_below_c < cold_below_c < hot_above_c"
+        )
+    if air["duration_h"] <= 0:
+        raise ProfileError(f"{name}: air.duration_h must be greater than 0")
 
     rain = profile["rain"]
     if rain["min_mm"] < 0 or rain["window_h"] <= 0:
