@@ -58,7 +58,9 @@ SOIL_ADC_CHANNEL = _env_int("PLANTPULSE_SOIL_ADC_CHANNEL", 0)    # port A0
 LIGHT_ADC_CHANNEL = _env_int("PLANTPULSE_LIGHT_ADC_CHANNEL", 2)  # port A2
 DHT_TYPE = os.environ.get("PLANTPULSE_DHT_TYPE", "11")  # "11" digital, "20" I2C
 DHT_PIN = _env_int("PLANTPULSE_DHT_PIN", 5)             # port D5, DHT11 only
-LED_BAR_PIN = _env_int("PLANTPULSE_LED_BAR_PIN", 16)    # port D16
+
+# State screen: Grove 16x2 LCD (White on Blue), on any I2C port
+LCD_I2C_ADDRESS = _env_int("PLANTPULSE_LCD_I2C_ADDRESS", 0x3E)
 
 # Plant profile (T-23): config/plants/<name>.json
 PLANTS_DIR = ROOT_DIR / "config" / "plants"
