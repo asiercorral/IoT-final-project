@@ -1,2 +1,3 @@
 # Tools for developing and testing on a laptop (no Pi needed).
 pytest>=7
+reportlab>=4        # scripts/make_led_legend.py draws docs/led-legend.pdf

@@ -4,3 +4,4 @@
 # are installed on the Pi as in Lab 4, not from this file.
 #
 # Add each package here in the pull request that first imports it.
+paho-mqtt>=2.0,<3   # MQTT client: state publishing and the LED program
