@@ -59,3 +59,7 @@ LIGHT_ADC_CHANNEL = _env_int("PLANTPULSE_LIGHT_ADC_CHANNEL", 2)  # port A2
 DHT_TYPE = os.environ.get("PLANTPULSE_DHT_TYPE", "11")  # "11" digital, "20" I2C
 DHT_PIN = _env_int("PLANTPULSE_DHT_PIN", 5)             # port D5, DHT11 only
 LED_BAR_PIN = _env_int("PLANTPULSE_LED_BAR_PIN", 16)    # port D16
+
+# Plant profile (T-23): config/plants/<name>.json
+PLANTS_DIR = ROOT_DIR / "config" / "plants"
+PLANT_PROFILE = os.environ.get("PLANTPULSE_PLANT", "basil")

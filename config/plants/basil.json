@@ -1,0 +1,26 @@
+{
+  "name": "Sweet basil (demo plant)",
+  "rain_exposed": false,
+  "soil": {
+    "critical_below_pct": 20,
+    "dry_below_pct": 45,
+    "wet_above_pct": 90,
+    "wet_check_h": 24,
+    "saturated_above_pct": 97,
+    "saturated_h": 48
+  },
+  "light": {
+    "low_below_pct": 20,
+    "afternoon_from_h": 14,
+    "afternoon_to_h": 18,
+    "low_afternoons": 3
+  },
+  "air": {
+    "cold_below_c": 12,
+    "hot_above_c": 35
+  },
+  "rain": {
+    "min_mm": 1,
+    "window_h": 6
+  }
+}
