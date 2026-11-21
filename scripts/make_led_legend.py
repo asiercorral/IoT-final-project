@@ -1,8 +1,9 @@
-"""Draw the printed LED legend card (T-26) as docs/led-legend.pdf.
+"""Draw the printed legend card (T-26) as docs/led-legend.pdf.
 
-The card sits beside the plant and tells pupils what each LED bar pattern
-means. The segment counts come from plantpulse/led_service.py, so the card
-and the LED program cannot drift apart.
+The card sits beside the plant and tells pupils what each screen of the
+Grove 16x2 LCD means. Each screen on the card is drawn from
+``led_service.screen_for``, the same text and bar the program sends to the
+LCD, so the card and the program cannot drift apart.
 
     pip install -r requirements-dev.txt
     python scripts/make_led_legend.py
@@ -24,66 +25,77 @@ from reportlab.pdfgen import canvas
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT))
 
-from plantpulse.led_bar import SEGMENTS  # noqa: E402
-from plantpulse.led_service import PATTERNS  # noqa: E402
+from plantpulse import lcd  # noqa: E402
+from plantpulse.led_service import screen_for  # noqa: E402
 
 OUTPUT = ROOT / "docs" / "led-legend.pdf"
 
-# Grove LED Bar v2 colours, in the order ``level`` lights them:
-# seven green, one light green, one yellow, one red.
-SEGMENT_COLOURS = ["#22b14c"] * 7 + ["#9bd34a", "#ffc20e", "#ed1c24"]
-UNLIT = HexColor("#5a5a5a")
-HOUSING = HexColor("#262626")
+BEZEL = HexColor("#1e1e1e")
+SCREEN = HexColor("#1d4ed8")      # White on Blue LCD
+CELL_BG = HexColor("#2a5be3")     # unlit pixels, slightly lighter than the screen
+PIXEL = HexColor("#f4f7ff")
 INK = HexColor("#1d1d1d")
 MUTED = HexColor("#5f5f5f")
 RULE = HexColor("#d4d4d4")
 ACCENT = HexColor("#2e7d32")
 
 ROWS = [
-    # (segments lit, blinking, heading, what to do)
-    (PATTERNS["NORMAL"], False, "All good",
-     "The plant is fine. There is nothing to do."),
-    (PATTERNS["CHECK"], False, "Check the plant",
+    # (state shown, heading, what to do)
+    ("NORMAL", "All good", "The plant is fine. There is nothing to do."),
+    ("CHECK", "Check the plant",
      "Something is starting to change. Today, touch the soil and look at the leaves."),
-    (PATTERNS["ATTENTION"], False, "The plant needs help",
+    ("ATTENTION", "The plant needs help",
      "Tell your teacher now. The class web page explains why."),
-    (SEGMENTS, True, "Blinking: sensor problem",
-     "Do not trust the bar. Tell your teacher."),
+    ("FAULT", "Sensor problem",
+     "The screen cannot tell how the plant is. Tell your teacher."),
 ]
 
 PAGE_W, PAGE_H = landscape(A5)
 MARGIN = 11 * mm
-SEG_W, SEG_H, SEG_GAP = 5.6 * mm, 11 * mm, 1.4 * mm
-PAD = 2 * mm
-BAR_W = SEGMENTS * SEG_W + (SEGMENTS - 1) * SEG_GAP + 2 * PAD
-TEXT_X = MARGIN + BAR_W + 9 * mm
+CELL_W, CELL_H, CELL_GAP = 3.8 * mm, 6.2 * mm, 0.5 * mm
+SCREEN_PAD = 2 * mm
+BEZEL_PAD = 1.8 * mm
+SCREEN_W = lcd.COLS * CELL_W + (lcd.COLS - 1) * CELL_GAP + 2 * SCREEN_PAD
+SCREEN_H = lcd.ROWS * CELL_H + (lcd.ROWS - 1) * CELL_GAP * 2 + 2 * SCREEN_PAD
+LCD_W = SCREEN_W + 2 * BEZEL_PAD
+LCD_H = SCREEN_H + 2 * BEZEL_PAD
+TEXT_X = MARGIN + LCD_W + 8 * mm
 TEXT_W = PAGE_W - MARGIN - TEXT_X
 
 
-def draw_bar(c, x, y, lit, blinking):
-    """LED bar with its lower-left corner at (x, y)."""
-    c.setFillColor(HOUSING)
-    c.roundRect(x, y, BAR_W, SEG_H + 2 * PAD, 2 * mm, stroke=0, fill=1)
-    for i in range(SEGMENTS):
-        sx = x + PAD + i * (SEG_W + SEG_GAP)
-        c.setFillColor(HexColor(SEGMENT_COLOURS[i]) if i < lit else UNLIT)
-        c.roundRect(sx, y + PAD, SEG_W, SEG_H, 0.8 * mm, stroke=0, fill=1)
-    if blinking:
-        # Motion marks on both ends: the whole bar goes on and off.
-        c.setStrokeColor(INK)
-        c.setLineWidth(1.1)
-        cy = y + PAD + SEG_H / 2
-        for k in range(3):
-            r = (3 + 1.5 * k) * mm
-            for cx, start in ((x + BAR_W, -40), (x, 140)):
-                c.arc(cx - r, cy - r, cx + r, cy + r, start, 80)
+def draw_lcd(c, x, y, rows):
+    """The 16x2 LCD with its lower-left corner at (x, y), showing two rows."""
+    c.setFillColor(BEZEL)
+    c.roundRect(x, y, LCD_W, LCD_H, 1.6 * mm, stroke=0, fill=1)
+    c.setFillColor(SCREEN)
+    c.rect(x + BEZEL_PAD, y + BEZEL_PAD, SCREEN_W, SCREEN_H, stroke=0, fill=1)
+    for r, text in enumerate(rows):
+        row = lcd.to_row(text)
+        cy = y + BEZEL_PAD + SCREEN_PAD + (lcd.ROWS - 1 - r) * (CELL_H + 2 * CELL_GAP)
+        for col, byte in enumerate(row):
+            cx = x + BEZEL_PAD + SCREEN_PAD + col * (CELL_W + CELL_GAP)
+            c.setFillColor(CELL_BG)
+            c.rect(cx, cy, CELL_W, CELL_H, stroke=0, fill=1)
+            if byte == lcd.FULL:
+                c.setFillColor(PIXEL)
+                c.rect(cx, cy, CELL_W, CELL_H, stroke=0, fill=1)
+            elif byte == lcd.EMPTY:
+                c.setStrokeColor(PIXEL)
+                c.setLineWidth(0.9)
+                inset = 0.45
+                c.rect(cx + inset, cy + inset, CELL_W - 2 * inset, CELL_H - 2 * inset,
+                       stroke=1, fill=0)
+            elif byte != 0x20:
+                c.setFillColor(PIXEL)
+                c.setFont("Courier-Bold", 13)
+                c.drawCentredString(cx + CELL_W / 2, cy + CELL_H / 2 - 3.4, chr(byte))
 
 
 def draw_card(path):
     c = canvas.Canvas(str(path), pagesize=(PAGE_W, PAGE_H))
-    c.setTitle("PlantPulse LED legend")
+    c.setTitle("PlantPulse screen legend")
     c.setAuthor("PlantPulse team")
-    c.setSubject("What the LED bar beside the plant means")
+    c.setSubject("What the screen beside the plant means")
 
     c.setFillColor(white)
     c.rect(0, 0, PAGE_W, PAGE_H, stroke=0, fill=1)
@@ -95,21 +107,20 @@ def draw_card(path):
     c.drawString(MARGIN, top - 9, "PLANTPULSE")
     c.setFillColor(INK)
     c.setFont("Helvetica-Bold", 22)
-    c.drawString(MARGIN, top - 31, "What the light bar means")
+    c.drawString(MARGIN, top - 31, "What the screen means")
 
     # Rows
     rows_top = top - 44
     footer_h = 17 * mm
     row_h = (rows_top - MARGIN - footer_h) / len(ROWS)
-    bar_h = SEG_H + 2 * PAD
-    for n, (lit, blinking, heading, action) in enumerate(ROWS):
+    for n, (name, heading, action) in enumerate(ROWS):
         row_top = rows_top - n * row_h
         c.setStrokeColor(RULE)
         c.setLineWidth(0.6)
         c.line(MARGIN, row_top, PAGE_W - MARGIN, row_top)
 
         mid = row_top - row_h / 2
-        draw_bar(c, MARGIN, mid - bar_h / 2, lit, blinking)
+        draw_lcd(c, MARGIN, mid - LCD_H / 2, screen_for(name))
 
         lines = simpleSplit(action, "Helvetica", 11, TEXT_W)
         block = 16 + 13.5 * len(lines)
@@ -133,8 +144,8 @@ def draw_card(path):
     c.setFont("Helvetica", 9.5)
     c.setFillColor(MUTED)
     c.drawString(MARGIN, y - 13,
-                 "The bar updates every 5 minutes. Bar completely off? "
-                 "The system is off or starting: tell your teacher.")
+                 'The screen updates every 5 minutes. Screen blank or "No plant state"? '
+                 "Tell your teacher.")
 
     c.showPage()
     c.save()

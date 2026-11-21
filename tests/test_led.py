@@ -1,14 +1,14 @@
-"""Tests for the state payload, the LED bar driver and the LED program.
+"""Tests for the state payload, the LCD driver and the state display program.
 
-They run on a laptop: a fake GPIO records the pins and the test decodes the
-frames the MY9221 chip would receive.
+They run on a laptop: a fake I2C bus plays the LCD controller and keeps
+what the screen would show.
 """
 
 import json
 
 import pytest
 
-from plantpulse import led_bar, led_service, state, status
+from plantpulse import lcd, led_service, state, status
 
 START = 1_731_400_000
 
@@ -16,125 +16,140 @@ START = 1_731_400_000
 # --- fake hardware ------------------------------------------------------------
 
 
-class Wire:
-    """Records every write to the two pins of the bar, in order."""
+class FakeLcdBus:
+    """Plays the AIP31068 controller: follows commands and keeps the screen."""
 
-    def __init__(self):
-        self.events = []  # (pin, value)
+    def __init__(self, address=0x3E):
+        self.address = address
+        self.rows = [bytearray(b"?" * 40), bytearray(b"?" * 40)]
+        self.cgram = bytearray(64)
+        self.target = None       # ("ddram", row, col) or ("cgram", index)
+        self.display_on = False
+        self.writes = 0
+        self.unplugged = False
 
+    def write_byte_data(self, address, control, value):
+        if self.unplugged:
+            raise OSError(121, "Remote I/O error")
+        assert address == self.address
+        self.writes += 1
+        if control == lcd.COMMAND:
+            self._command(value)
+        elif control == lcd.DATA:
+            self._data(value)
+        else:
+            raise AssertionError(f"unknown control byte {control:#x}")
 
-class FakeGPIO:
-    OUT = "out"
-    wire = None
+    def _command(self, value):
+        if value & 0x80:
+            ddram = value & 0x7F
+            self.target = ("ddram", ddram // 0x40, ddram % 0x40)
+        elif value & 0x40:
+            self.target = ("cgram", value & 0x3F)
+        elif value == 0x01:
+            self.rows = [bytearray(b" " * 40), bytearray(b" " * 40)]
+            self.target = ("ddram", 0, 0)
+        elif value & 0x08 and not value & 0x30:
+            self.display_on = bool(value & 0x04)
 
-    def __init__(self, pin, direction):
-        assert direction == FakeGPIO.OUT
-        self.pin = pin
+    def _data(self, value):
+        if self.target[0] == "cgram":
+            self.cgram[self.target[1]] = value
+            self.target = ("cgram", self.target[1] + 1)
+        else:
+            _, row, col = self.target
+            self.rows[row][col] = value
+            self.target = ("ddram", row, col + 1)
 
-    def write(self, value):
-        FakeGPIO.wire.events.append((self.pin, int(value)))
-
-
-@pytest.fixture
-def wire():
-    FakeGPIO.wire = Wire()
-    return FakeGPIO.wire
-
-
-def make_bar(pin=16):
-    return led_bar.LedBar(pin, gpio_class=FakeGPIO, sleep=lambda s: None)
-
-
-def decode_frames(events, data_pin=16, clock_pin=17):
-    """What the chip latches: bits are read on every clock edge, 208 per frame,
-    and four data pulses with the clock still latch the frame."""
-    frames, bits = [], []
-    data = clock = 0
-    pulses = 0
-    for pin, value in events:
-        if pin == clock_pin:
-            if value != clock:
-                bits.append(data)
-                pulses = 0
-            clock = value
-        elif pin == data_pin:
-            if data == 0 and value == 1:
-                pulses += 1
-            data = value
-            if pulses == 4 and value == 0:
-                frames.append(bits)
-                bits, pulses = [], 0
-    words = []
-    for frame in frames:
-        assert len(frame) == 16 * 13, f"frame has {len(frame)} bits"
-        words.append([int("".join(map(str, frame[i:i + 16])), 2) for i in range(0, len(frame), 16)])
-    return words
+    def screen(self):
+        """The two visible rows; bar cells as '#' (full) and '_' (empty)."""
+        cells = {lcd.FULL: "#", lcd.EMPTY: "_"}
+        return [
+            "".join(cells.get(b, chr(b)) for b in row[: lcd.COLS]) for row in self.rows
+        ]
 
 
-def lit(frame):
-    """Segments lit in one decoded frame, as booleans."""
-    assert frame[0] == led_bar.COMMAND
-    assert frame[11:] == [0, 0]
-    assert all(word in (led_bar.ON, led_bar.OFF) for word in frame[1:11])
-    return [word == led_bar.ON for word in frame[1:11]]
+def make_lcd(bus=None):
+    return lcd.Lcd(0x3E, bus=bus or FakeLcdBus(), sleep=lambda s: None)
 
 
-# --- LED bar driver -----------------------------------------------------------
+# --- LCD driver -----------------------------------------------------------------
 
 
-def test_clock_is_on_the_next_pin(wire):
-    make_bar(pin=16).off()
+def test_text_appears_on_both_rows():
+    bus = FakeLcdBus()
 
-    assert {pin for pin, _ in wire.events} == {16, 17}
+    make_lcd(bus).show("Hello", "PlantPulse")
 
-
-@pytest.mark.parametrize("count", range(11))
-def test_level_lights_the_first_n_segments(wire, count):
-    bar = make_bar()
-    wire.events.clear()
-
-    bar.level(count)
-
-    [frame] = decode_frames(wire.events)
-    assert lit(frame) == [i < count for i in range(10)]
+    assert bus.display_on
+    assert bus.screen() == ["Hello" + " " * 11, "PlantPulse" + " " * 6]
 
 
-def test_level_is_clamped(wire):
-    bar = make_bar()
-    wire.events.clear()
+def test_long_text_is_cut_to_16_characters():
+    bus = FakeLcdBus()
 
-    bar.level(15)
-    bar.level(-3)
+    make_lcd(bus).show("This line is far too long", "")
 
-    frames = decode_frames(wire.events)
-    assert lit(frames[0]) == [True] * 10
-    assert lit(frames[1]) == [False] * 10
+    assert bus.screen()[0] == "This line is far"
 
 
-def test_any_set_of_segments_can_be_lit(wire):
-    bar = make_bar()
-    wire.events.clear()
-    pattern = [True, False] * 5
+def test_a_new_screen_replaces_the_old_one_completely():
+    bus = FakeLcdBus()
+    screen = make_lcd(bus)
 
-    bar.show(pattern)
+    screen.show("Check the plant", lcd.bar(5))
+    screen.show("All good", lcd.bar(2))
 
-    assert lit(decode_frames(wire.events)[0]) == pattern
-
-
-def test_consecutive_frames_decode_correctly(wire):
-    # The clock keeps toggling from where the last frame left it.
-    bar = make_bar()
-    wire.events.clear()
-
-    for count in (2, 5, 10, 0):
-        bar.level(count)
-
-    assert [sum(lit(f)) for f in decode_frames(wire.events)] == [2, 5, 10, 0]
+    assert bus.screen() == ["All good        ", "   ##________   "]
 
 
-def test_wrong_number_of_segments_is_rejected(wire):
-    with pytest.raises(ValueError):
-        make_bar().show([True] * 9)
+@pytest.mark.parametrize("lit", range(11))
+def test_bar_has_ten_centred_cells(lit):
+    row = lcd.bar(lit)
+
+    assert len(row) == lcd.COLS
+    assert row[:3] == row[13:] == b"   "
+    assert list(row[3:13]) == [lcd.FULL] * lit + [lcd.EMPTY] * (10 - lit)
+
+
+def test_bar_is_clamped():
+    assert lcd.bar(15) == lcd.bar(10)
+    assert lcd.bar(-2) == lcd.bar(0)
+
+
+def test_empty_cell_is_a_hollow_box_in_custom_character_zero():
+    bus = FakeLcdBus()
+
+    make_lcd(bus).show("", lcd.bar(0))
+
+    assert tuple(bus.cgram[:8]) == lcd.EMPTY_PATTERN
+
+
+def test_non_ascii_text_does_not_crash():
+    bus = FakeLcdBus()
+
+    make_lcd(bus).show("Plántula", "")
+
+    assert bus.screen()[0].startswith("Pl?ntula")
+
+
+def test_setup_runs_once_then_again_after_the_screen_is_replugged():
+    bus = FakeLcdBus()
+    screen = make_lcd(bus)
+    screen.show("one", "")
+    writes_with_setup = bus.writes
+    screen.show("two", "")
+    assert bus.writes - writes_with_setup < writes_with_setup  # no setup the 2nd time
+
+    bus.unplugged = True
+    with pytest.raises(OSError):
+        screen.show("three", "")
+    replugged = FakeLcdBus()     # fresh controller: lost its settings
+    screen._bus = replugged
+    screen.show("four", "")
+
+    assert replugged.display_on
+    assert replugged.screen()[0].startswith("four")
 
 
 # --- state payload ------------------------------------------------------------
@@ -198,102 +213,116 @@ def test_state_is_published_retained_on_the_state_topic():
     assert client.published == [("plantpulse/school01/plant01/state", payload, 1, True)]
 
 
-# --- LED program --------------------------------------------------------------
-
-
-class FakeBar:
-    def __init__(self):
-        self.levels = []
-
-    def level(self, count):
-        self.levels.append(count)
+# --- state display program ---------------------------------------------------
 
 
 def message(**fields):
     return json.dumps(fields).encode()
 
 
+def displayed(service, *raws):
+    """Feed messages to the program; return what the screen shows at the end."""
+    for raw in raws:
+        service.on_message(raw)
+    return service.display._bus.screen()
+
+
+def make_service():
+    return led_service.LedService(make_lcd())
+
+
 @pytest.mark.parametrize(
-    "name, segments", [("NORMAL", 2), ("CHECK", 5), ("ATTENTION", 10)]
+    "name, screen",
+    [
+        ("NORMAL", ["All good        ", "   ##________   "]),
+        ("CHECK", ["Check the plant ", "   #####_____   "]),
+        ("ATTENTION", ["Plant needs help", "   ##########   "]),
+    ],
 )
-def test_each_state_has_its_pattern(name, segments):
-    bar = FakeBar()
-
-    led_service.LedService(bar).on_message(message(state=name))
-
-    assert bar.levels == [segments]
+def test_each_state_has_its_screen(name, screen):
+    assert displayed(make_service(), message(state=name)) == screen
 
 
 def test_the_three_patterns_are_different():
     assert len(set(led_service.PATTERNS.values())) == 3
+    assert len(set(led_service.HEADINGS.values())) == 3
 
 
-def test_the_bar_changes_on_the_first_message_of_a_new_state():
-    bar = FakeBar()
-    service = led_service.LedService(bar)
+def test_the_screen_changes_on_the_first_message_of_a_new_state():
+    service = make_service()
+    bars = []
 
     for name in ("NORMAL", "CHECK", "ATTENTION", "NORMAL"):
-        service.on_message(message(state=name, reason="r"))
+        bars.append(displayed(service, message(state=name, reason="r"))[1].count("#"))
 
-    assert bar.levels == [2, 5, 10, 2]
+    assert bars == [2, 5, 10, 2]
     assert service.current == "NORMAL"
+
+
+def test_fault_says_sensor_problem():
+    screen = displayed(make_service(), message(state="NORMAL"), message(state="FAULT"))
+
+    assert screen == ["Sensor problem  ", "Tell the teacher"]
 
 
 @pytest.mark.parametrize(
     "raw",
-    [
-        message(state="FAULT"),
-        message(state="PURPLE"),
-        message(reason="no state"),
-        b"not json",
-        b"\xff\xfe",
-        b"",
-    ],
+    [message(state="PURPLE"), message(reason="no state"), b"not json", b"\xff\xfe", b""],
 )
-def test_fault_or_unreadable_message_turns_the_bar_off_never_normal(raw):
-    bar = FakeBar()
-    service = led_service.LedService(bar)
-    service.on_message(message(state="NORMAL"))
+def test_unreadable_message_is_never_shown_as_all_good(raw):
+    screen = displayed(make_service(), message(state="NORMAL"), raw)
 
-    service.on_message(raw)
-
-    assert bar.levels == [2, 0]
+    assert screen == ["No plant state  ", "Tell the teacher"]
 
 
 def test_a_rule_engine_message_with_only_a_status_code_works():
-    bar = FakeBar()
+    screen = displayed(make_service(), message(status_code="CHECK_MOISTURE"))
 
-    led_service.LedService(bar).on_message(message(status_code="CHECK_MOISTURE"))
-
-    assert bar.levels == [5]
+    assert screen[0].startswith("Check the plant")
 
 
-def test_published_payload_drives_the_real_driver(wire):
-    # State message -> LED program -> MY9221 frame, end to end without hardware.
-    bar = make_bar()
-    wire.events.clear()
-    raw = json.dumps(state.build_state("CHECK", "dry", timestamp=START)).encode()
+def test_published_payload_reaches_the_screen():
+    # build_state -> JSON -> program -> I2C writes, end to end without hardware.
+    raw = json.dumps(state.build_state("ATTENTION", "dry", timestamp=START)).encode()
 
-    led_service.LedService(bar).on_message(raw)
-
-    assert lit(decode_frames(wire.events)[0]) == [True] * 5 + [False] * 5
+    assert displayed(make_service(), raw)[0] == "Plant needs help"
 
 
-def test_demo_cycles_the_three_patterns():
-    bar = FakeBar()
+def test_an_unplugged_screen_does_not_stop_the_program():
+    service = make_service()
+    service.display._bus.unplugged = True
+
+    service.on_message(message(state="CHECK"))   # logged, not raised
+
+    service.display._bus.unplugged = False
+    assert displayed(service, message(state="NORMAL"))[0].startswith("All good")
+
+
+def test_demo_cycles_the_three_screens():
+    shown = []
+
+    class Recorder:
+        def show(self, line1, line2):
+            shown.append(line1)
+
     sleeps = []
+    led_service.run_demo(led_service.LedService(Recorder()), 3, cycles=2, sleep=sleeps.append)
 
-    led_service.run_demo(led_service.LedService(bar), 3, cycles=2, sleep=sleeps.append)
-
-    assert bar.levels == [2, 5, 10, 2, 5, 10]
+    assert shown == ["All good", "Check the plant", "Plant needs help"] * 2
     assert sleeps == [3] * 6
 
 
+def test_every_screen_fits_in_16_columns():
+    for name in (*state.STATES, None):
+        assert all(len(lcd.to_row(row)) == lcd.COLS for row in led_service.screen_for(name))
+        assert all(len(row) <= lcd.COLS for row in led_service.screen_for(name))
+
+
 def test_without_grove_libraries_the_program_stops_with_a_message(monkeypatch, capsys):
-    def missing(pin):
+    def missing(address):
         raise ModuleNotFoundError("No module named 'grove'")
 
-    monkeypatch.setattr(led_service, "LedBar", missing)
+    monkeypatch.setattr(lcd, "Lcd", missing)
 
     with pytest.raises(SystemExit) as exc:
         led_service.main(["--demo"])

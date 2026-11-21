@@ -99,17 +99,18 @@ Example telemetry from the plan:
 
 Unavailable readings are JSON `null`. Add calibrated `soil_moisture_pct` after calibration; light is a relative percentage, not an uncalibrated claim of lux.
 
-## LED bar (US-01)
+## State screen (US-01)
 
-The state is published retained on `plantpulse/school01/plant01/state` (format in `plantpulse/state.py`). `plantpulse/led_service.py` follows that topic and changes the Grove LED Bar on D16 as soon as a new state arrives: Normal 2 segments, Check 5, Attention 10. Fault, an unreadable message or no state turns the bar off until the blinking pattern (T-39). The printed legend is [docs/led-legend.pdf](docs/led-legend.pdf), drawn by `scripts/make_led_legend.py`.
+The signal for pupils is a Grove 16x2 LCD (White on Blue) on an **I2C port** of the Base HAT (address 0x3E). The state is published retained on `plantpulse/school01/plant01/state` (format in `plantpulse/state.py`). `plantpulse/led_service.py` follows that topic and rewrites the screen as soon as a new state arrives: a message on the first row and a 10-cell bar on the second. Normal: "All good", 2 cells; Check: "Check the plant", 5 cells; Attention: "Plant needs help", 10 cells. Fault shows "Sensor problem"; an unreadable message or no state shows "No plant state", never "All good". The printed legend is [docs/led-legend.pdf](docs/led-legend.pdf), drawn by `scripts/make_led_legend.py`.
 
 On the Pi, with Mosquitto running:
 
 ```bash
-python -m plantpulse.led_service            # LED program
+python -m plantpulse.lcd                    # check the screen
+python -m plantpulse.led_service            # state display program
 python -m plantpulse.status --publish       # basic soil status -> state, until the rule engine (T-24)
 python -m plantpulse.state ATTENTION        # or publish a state by hand
-python -m plantpulse.led_service --demo     # the three patterns, no MQTT
+python -m plantpulse.led_service --demo     # the three screens, no MQTT
 ```
 
 ## Open decisions and validation

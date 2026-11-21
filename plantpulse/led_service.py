@@ -1,22 +1,25 @@
-"""LED program: show the plant state on the Grove LED Bar.
+"""State display program: show the plant state on the Grove 16x2 LCD.
 
-It subscribes to the retained state topic and changes the bar as soon as a
-new state arrives, so the bar follows the state within the same reading
-cycle. The patterns are the ones on the printed legend card
-(docs/led-legend.pdf):
+(The backlog calls this the "LED program"; the hardware is the Grove 16x2
+LCD, White on Blue, on an I2C port.)
 
-    NORMAL     two steady segments
-    CHECK      half the bar (5 segments)
-    ATTENTION  the full bar (10 segments)
+It subscribes to the retained state topic and rewrites the screen as soon
+as a new state arrives, so the screen follows the state within the same
+reading cycle. The screens are the ones on the printed legend card
+(docs/led-legend.pdf): a short message on the first row and a 10-cell bar
+on the second.
 
-A FAULT, an unreadable message or no state at all turns the bar off, so
-missing data is never shown as Normal. The blinking fault pattern comes
-with T-39.
+    NORMAL     All good           2 cells
+    CHECK      Check the plant    5 cells
+    ATTENTION  Plant needs help   10 cells
+
+A FAULT says "Sensor problem". An unreadable message or one without a
+state says "No plant state", so missing data is never shown as All good.
 
 Run on the Pi:
 
     python -m plantpulse.led_service           # follow the state over MQTT
-    python -m plantpulse.led_service --demo    # cycle the three patterns, no MQTT
+    python -m plantpulse.led_service --demo    # cycle the three screens, no MQTT
 """
 
 from __future__ import annotations
@@ -28,33 +31,53 @@ import logging
 import signal
 import time
 
-from plantpulse import config, state
-from plantpulse.led_bar import LedBar
+from plantpulse import config, lcd, state
 
 log = logging.getLogger(__name__)
 
-# Segments lit for each state. Anything else (FAULT, unknown) is off.
+# Bar cells lit for each state, out of BAR_CELLS.
+BAR_CELLS = 10
 PATTERNS = {
     "NORMAL": 2,
     "CHECK": 5,
     "ATTENTION": 10,
 }
+HEADINGS = {
+    "NORMAL": "All good",
+    "CHECK": "Check the plant",
+    "ATTENTION": "Plant needs help",
+}
+FAULT_SCREEN = ("Sensor problem", "Tell the teacher")
+UNKNOWN_SCREEN = ("No plant state", "Tell the teacher")
+STARTING_SCREEN = ("PlantPulse", "Starting...")
+
+
+def screen_for(name):
+    """The two rows shown for one state (one of ``state.STATES`` or None)."""
+    if name in PATTERNS:
+        return HEADINGS[name], lcd.bar(PATTERNS[name], BAR_CELLS)
+    if name == "FAULT":
+        return FAULT_SCREEN
+    return UNKNOWN_SCREEN
 
 
 class LedService:
-    """Turns state messages into bar patterns."""
+    """Turns state messages into screens."""
 
-    def __init__(self, bar):
-        self.bar = bar
+    def __init__(self, display):
+        self.display = display
         self.current = None
 
     def show(self, new_state):
         """Show one state (one of ``state.STATES``, or None when unknown)."""
-        # The bar is rewritten even when the state has not changed, so a
-        # glitch on the wire is corrected by the next message.
-        self.bar.level(PATTERNS.get(new_state, 0))
+        # The screen is rewritten even when the state has not changed, so a
+        # screen that was unplugged or glitched is put right by the next message.
+        try:
+            self.display.show(*screen_for(new_state))
+        except OSError as exc:
+            log.warning("LCD does not answer (%s); trying again with the next state", exc)
         if new_state != self.current:
-            log.info("LED bar: %s -> %s", self.current or "none", new_state or "unknown (off)")
+            log.info("screen: %s -> %s", self.current or "none", new_state or "unknown")
             self.current = new_state
 
     def on_message(self, raw):
@@ -94,7 +117,7 @@ def run_mqtt(service, host, port):
         log.info("connected to %s:%d, following %s", host, port, config.TOPIC_STATE)
 
     def on_disconnect(client, userdata, flags, reason_code, properties):
-        log.warning("lost the broker (%s); the bar keeps the last state", reason_code)
+        log.warning("lost the broker (%s); the screen keeps the last state", reason_code)
 
     client.on_connect = on_connect
     client.on_disconnect = on_disconnect
@@ -115,28 +138,31 @@ def _stop(signum, frame):
 def main(argv=None):
     parser = argparse.ArgumentParser(
         prog="python -m plantpulse.led_service",
-        description="Show the PlantPulse state on the Grove LED Bar.",
+        description="Show the PlantPulse state on the Grove 16x2 LCD.",
     )
     parser.add_argument("--demo", action="store_true",
-                        help="cycle the three patterns without MQTT")
+                        help="cycle the three screens without MQTT")
     parser.add_argument("--seconds", type=float, default=3,
-                        help="seconds per pattern in --demo (default: %(default)s)")
+                        help="seconds per screen in --demo (default: %(default)s)")
     parser.add_argument("--host", default=config.MQTT_HOST, help="broker (default: %(default)s)")
     parser.add_argument("--port", type=int, default=config.MQTT_PORT, help="(default: %(default)s)")
-    parser.add_argument("--pin", type=int, default=config.LED_BAR_PIN,
-                        help="Grove port of the bar (default: D%(default)s)")
+    parser.add_argument("--address", type=lambda v: int(v, 0), default=config.LCD_I2C_ADDRESS,
+                        help="I2C address of the LCD (default: 0x%(default)X)")
     args = parser.parse_args(argv)
 
     logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s")
     signal.signal(signal.SIGTERM, _stop)
 
     try:
-        bar = LedBar(args.pin)
+        display = lcd.Lcd(args.address)
     except ImportError as exc:
         parser.exit(1, f"Grove libraries not found ({exc}). Run this on the Pi.\n")
 
-    service = LedService(bar)
-    service.show(None)  # off until the first state arrives
+    service = LedService(display)
+    try:
+        display.show(*STARTING_SCREEN)
+    except OSError as exc:
+        log.warning("LCD does not answer at 0x%X (%s): is it on an I2C port?", args.address, exc)
     try:
         if args.demo:
             run_demo(service, args.seconds)
@@ -147,7 +173,10 @@ def main(argv=None):
     except KeyboardInterrupt:
         log.info("stopped")
     finally:
-        bar.off()
+        try:
+            display.show("PlantPulse", "Stopped")
+        except OSError:
+            pass
 
 
 if __name__ == "__main__":
