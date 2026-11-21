@@ -53,8 +53,8 @@ Right after watering the index is near 100 %, which is normal. Too much water on
 
 The team decided on 2026-11-21 that air temperature changes the state (before, it was context only). Humidity stays context.
  
-- **Basil** is chilling-sensitive: injury occurs at or below 10 °C and is severe at or below 5 °C [8]; other sources put the limit at 12 °C [9]. We use 12 °C. The hot limit (35 °C) is our own assumption; basil grows best in the mid- to upper-80s °F (about 29–31 °C) [10] and no reliable upper limit was found.
-- **Tomato**: temperatures above 32 °C harm fruit set, and below 10 °C growth suffers [11]. Chilling injury is reported between 0 and 5 °C [12].
+- **Basil** is chilling-sensitive: injury occurs at or below 10 °C and is severe at or below 5 °C [8]; other sources put the limit at 12 °C [9]. We use 12 °C for Check and 5 °C for Attention. The hot limit (35 °C) is our own assumption; basil grows best in the mid- to upper-80s °F (about 29–31 °C) [10] and no reliable upper limit was found.
+- **Tomato**: temperatures above 32 °C harm fruit set, and below 10 °C growth suffers [11]. Chilling injury is reported between 0 and 5 °C [12], hence Attention below 5 °C.
 
 ### Light
  
@@ -76,7 +76,7 @@ Both plants need a lot of light; basil grows best at a daily light integral of a
  
 ## Validation
  
-`plantpulse/profile.py` rejects a profile with a missing value, a non-boolean `rain_exposed`, soil thresholds not in the order `critical < dry < wet <= saturated`, wet durations not in the order `0 < wet_check_h <= saturated_h`, or `cold_below_c` not below `hot_above_c`.
+`plantpulse/profile.py` rejects a profile with a missing value, a non-boolean `rain_exposed`, soil thresholds not in the order `critical < dry < wet <= saturated`, wet durations not in the order `0 < wet_check_h <= saturated_h`, air limits not in the order `severe_cold_below_c < cold_below_c < hot_above_c`, or `air.duration_h` not above 0.
  
 ## Sources
  
@@ -97,4 +97,5 @@ Both plants need a lot of light; basil grows best at a daily light integral of a
 | Date | Profile | Change | Reason |
 | --- | --- | --- | --- |
 | 2026-11-21 | basil, basil_demo, tomato | First values | From the sources above, before calibration |
+| 2026-11-21 | basil, basil_demo, tomato | Air temperature changes the state: `severe_cold_below_c` and `duration_h` added | Team decision; values from sources [8]–[12] |
  
