@@ -16,10 +16,29 @@ All values are **starting values**. Adjust them after calibration (T-12) and aft
  
 The soil value is a relative index, not a water content:
  
-- **0 %** = the dry calibration cup (`SOIL_DRY`)
-- **100 %** = the wet calibration cup, watered until it drains and left 10 min (`SOIL_WET`). This is *container capacity*: the most water the substrate holds after drainage.
+- **0 %** = the dry calibration cup (`PLANTPULSE_SOIL_DRY_MV`)
+- **100 %** = the waterlogged calibration cup (`PLANTPULSE_SOIL_WET_MV`): watered until water stands.
+(`PLANTPULSE_SOIL_WET_MV`). This is *container capacity*: the most water the substrate holds after drainage.
 Research gives thresholds as volumetric water content (VWC) or soil tension, so we converted them. Peat-based potting substrates hold roughly 45–65 % VWC at container capacity [4, 5]; we assume about 60 %, and some water left in the air-dried cup. A VWC of 0.30 is then roughly an index of 45–50 %, and 0.15 roughly 20–25 %. The conversion is approximate; calibration with the real plant decides.
  
+### Calibration of our probe (T-12)
+
+Measured on 2026-11-15 by @Ibonerdoiza2004 with the Grove soil moisture sensor in our basil substrate, 12 readings each, 10 s apart. Raw files: `docs/calibration/`.
+
+| File | Sample | Median | Spread | Index | Setting |
+| --- | --- | --- | --- | --- | --- |
+| `dry.csv` | Dry substrate | 118 mV | 107–128 mV | 0 % | `PLANTPULSE_SOIL_DRY_MV=118` |
+| `wet.csv` | Normally watered ("sweet spot") | 1197 mV | 1185–1214 mV | 58 % | check value |
+| `waterlogged.csv` | Watered until water stands | 1989 mV | 1936–1997 mV | 100 % | `PLANTPULSE_SOIL_WET_MV=1989` |
+
+The probe reads higher when wetter. The first readings after inserting the probe were still settling and are left out of the medians for the two wet samples. One reading moves by about 10–20 mV, which is about 1 index point.
+
+**Our scale differs from the literature.** In the sources, 100 % is container capacity: the water the substrate holds after draining. Our 100 % is waterlogged substrate, which holds more. Drained substrate therefore reads somewhat below 100 %, so `dry_below_pct` triggers a little earlier than the literature values suggest. That errs on the safe side.
+
+**Check of the scale.** Normally watered substrate lands at 58 %, inside the Normal range for basil (45–90 %); basil grew best at about 60–75 % of container capacity [1]. Only standing water reaches about 100 %: soil at 97 % or more for `saturated_h` gives `ATTENTION_WET`, and above 90 % for `wet_check_h` gives `CHECK_WET`.
+
+**Optional.** Measuring a cup 10 min after watering (drained) would show where normal watering lands on this scale.
+
 ## Values and their sources
  
 ### Soil: too dry
@@ -42,17 +61,20 @@ Research gives thresholds as volumetric water content (VWC) or soil tension, so 
  
 Right after watering the index is near 100 %, which is normal. Too much water only harms roots when the substrate **stays** wet: water fills the pores and the roots get no oxygen. If the air-filled pore space stays low, substrates become waterlogged and root diseases follow [5]. In tomato, stomata close after 24 h of flooding [6], and the leaves start to curl down between 24 and 48 h [7]. This is why the wet states use a duration and not a single reading. The values are the same for both plants because no plant-specific study was found; adjust them after watching how fast the demo pot dries.
  
-### Air temperature (context only, no LED state)
- 
+### Air temperature
+
 | Key | Basil | Tomato | Meaning |
 | --- | --- | --- | --- |
-| `air.cold_below_c` | 12 | 10 | Below this the web page adds a warning to the reason. |
-| `air.hot_above_c` | 35 | 32 | Above this the web page adds a warning to the reason. |
+| `air.severe_cold_below_c` | 5 | 5 | Colder than this for `duration_h`: **Attention**, move or cover the plant. |
+| `air.cold_below_c` | 12 | 10 | Colder than this for `duration_h`: **Check**, look for cold damage on the leaves. |
+| `air.hot_above_c` | 35 | 32 | Hotter than this for `duration_h`: **Check**, the soil dries out faster. |
+| `air.duration_h` | 0.5 | 0.5 | How long a limit must be crossed without a break. One reading near a limit is not enough: the DHT11 is only accurate to about ±2 °C, and the screen should not jump. `basil_demo` uses 0.05 h (3 min). |
+
+The team decided on 2026-11-21 that air temperature changes the state (before, it was context only). Humidity stays context.
  
-Temperature and humidity are context, not LED triggers (README, "Behaviour to preserve"). A cold or hot note helps pupils understand what they see.
- 
-- **Basil** is chilling-sensitive: injury occurs at or below 10 °C and is severe at or below 5 °C [8]; other sources put the limit at 12 °C [9]. We use 12 °C. The hot limit (35 °C) is our own assumption; basil grows best in the mid- to upper-80s °F (about 29–31 °C) [10] and no reliable upper limit was found.
-- **Tomato**: temperatures above 32 °C harm fruit set, and below 10 °C growth suffers [11]. Chilling injury is reported between 0 and 5 °C [12].
+- **Basil** is chilling-sensitive: injury occurs at or below 10 °C and is severe at or below 5 °C [8]; other sources put the limit at 12 °C [9]. We use 12 °C for Check and 5 °C for Attention. The hot limit (35 °C) is our own assumption; basil grows best in the mid- to upper-80s °F (about 29–31 °C) [10] and no reliable upper limit was found.
+- **Tomato**: temperatures above 32 °C harm fruit set, and below 10 °C growth suffers [11]. Chilling injury is reported between 0 and 5 °C [12], hence Attention below 5 °C.
+
 ### Light
  
 | Key | Basil | Tomato | Meaning |
@@ -73,7 +95,7 @@ Both plants need a lot of light; basil grows best at a daily light integral of a
  
 ## Validation
  
-`plantpulse/profile.py` rejects a profile with a missing value, a non-boolean `rain_exposed`, soil thresholds not in the order `critical < dry < wet <= saturated`, wet durations not in the order `0 < wet_check_h <= saturated_h`, or `cold_below_c` not below `hot_above_c`.
+`plantpulse/profile.py` rejects a profile with a missing value, a non-boolean `rain_exposed`, soil thresholds not in the order `critical < dry < wet <= saturated`, wet durations not in the order `0 < wet_check_h <= saturated_h`, air limits not in the order `severe_cold_below_c < cold_below_c < hot_above_c`, or `air.duration_h` not above 0.
  
 ## Sources
  
@@ -94,4 +116,5 @@ Both plants need a lot of light; basil grows best at a daily light integral of a
 | Date | Profile | Change | Reason |
 | --- | --- | --- | --- |
 | 2026-11-21 | basil, basil_demo, tomato | First values | From the sources above, before calibration |
- 
+| 2026-11-21 | basil, basil_demo, tomato | Air temperature changes the state: `severe_cold_below_c` and `duration_h` added | Team decision; values from sources [8]–[12] |
+| 2026-11-21 | all | Soil calibration from T-12 measurements: 0 % = 118 mV (dry), 100 % = 1989 mV (waterlogged) | Measured; see Calibration of our probe |

@@ -62,6 +62,12 @@ DHT_PIN = _env_int("PLANTPULSE_DHT_PIN", 5)             # port D5, DHT11 only
 # State screen: Grove 16x2 LCD (White on Blue), on any I2C port
 LCD_I2C_ADDRESS = _env_int("PLANTPULSE_LCD_I2C_ADDRESS", 0x3E)
 
+# T-12 calibration, 2026-11-15, median mV (docs/calibration/): 0 % = dry
+# substrate (118), 100 % = waterlogged substrate (1989).
+# Normally watered substrate reads about 1197 mV, i.e. 58 %.
+SOIL_DRY_MV = _env_int("PLANTPULSE_SOIL_DRY_MV", 118)
+SOIL_WET_MV = _env_int("PLANTPULSE_SOIL_WET_MV", 1989)
+
 # Plant profile (T-23): config/plants/<name>.json
 PLANTS_DIR = ROOT_DIR / "config" / "plants"
 PLANT_PROFILE = os.environ.get("PLANTPULSE_PLANT", "basil")

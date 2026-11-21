@@ -16,8 +16,10 @@
     "low_afternoons": 3
   },
   "air": {
+    "severe_cold_below_c": 5,
     "cold_below_c": 10,
-    "hot_above_c": 32
+    "hot_above_c": 32,
+    "duration_h": 0.5
   },
   "rain": {
     "min_mm": 1,

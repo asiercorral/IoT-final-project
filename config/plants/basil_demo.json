@@ -1,5 +1,5 @@
 {
-  "name": "Sweet basil, demo timing (wet states after minutes, not hours)",
+  "name": "Sweet basil, demo timing (wet and temperature states after minutes, not hours)",
   "rain_exposed": false,
   "soil": {
     "critical_below_pct": 20,
@@ -16,8 +16,10 @@
     "low_afternoons": 3
   },
   "air": {
+    "severe_cold_below_c": 5,
     "cold_below_c": 12,
-    "hot_above_c": 35
+    "hot_above_c": 35,
+    "duration_h": 0.05
   },
   "rain": {
     "min_mm": 1,

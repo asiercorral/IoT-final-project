@@ -42,7 +42,7 @@ Sprints transition on review dates. Rehearse on 16 Nov and 2 Dec. Integrate on 3
 Product Owner and Scrum Master remain a team decision tracked in T-02. Device, demo plant, database, forecast provider and sync slots remain open decisions.
 
 ## Behaviour to preserve
-Normal = two steady LED segments; Check = half bar; Attention = full bar; Fault = blinking bar. Read every 5 min. Missing or invalid sensors, or telemetry older than 10 min, produce Fault. Forecasts older than 6 h are outdated. Rain can delay advice only if the plant is exposed and soil is not critically dry. Temperature and humidity are context. Persistent low light means three afternoons; night is ignored.
+Normal = two steady LED segments; Check = half bar; Attention = full bar; Fault = blinking bar. Read every 5 min. Missing or invalid sensors, or telemetry older than 10 min, produce Fault. Forecasts older than 6 h are outdated. Rain can delay advice only if the plant is exposed and soil is not critically dry. Soil wet for 24 h gives Check, soaking wet for 48 h gives Attention. Air colder or hotter than the plant profile allows for 30 min gives Check, very cold air gives Attention. Humidity is context. Persistent low light means three afternoons; night is ignored.
 
 ## Out of scope
 Pump or automatic watering, phone alerts, weekly report endpoint, care button, PIR or voice calls, BLE, visits tracking, city map/dashboard, LoRaWAN, solar/battery nodes, multiple gardens, growth tracking, UV sensing and cloud analytics.
