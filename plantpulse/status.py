@@ -24,15 +24,16 @@ except ImportError:
     pass
 
 from plantpulse import config, state
-
-# TODO(T-12): replace with calibrated values; set SOIL_DRY / SOIL_WET in .env
 SOIL_CH = int(os.getenv("SOIL_CH", "0"))        # Grove port A0
-SOIL_DRY = int(os.getenv("SOIL_DRY", "2900"))   # raw value in dry substrate
-SOIL_WET = int(os.getenv("SOIL_WET", "1300"))   # raw value in wet substrate
+SOIL_DRY = int(os.getenv("SOIL_DRY", "147"))   # raw value in dry substrate
+SOIL_WET = int(os.getenv("SOIL_WET", "2461"))   # raw value in wet substrate
 
-# TODO(T-23): move thresholds to the plant profile
-ATTENTION_BELOW = 15                            # % moisture index
-CHECK_BELOW = 30
+from plantpulse.profile import load_profile
+
+# Thresholds come from the plant profile (T-23), chosen with PLANTPULSE_PLANT
+PROFILE = load_profile()
+ATTENTION_BELOW = PROFILE["soil"]["critical_below_pct"]
+CHECK_BELOW = PROFILE["soil"]["dry_below_pct"]
 
 INTERVAL_S = int(os.getenv("INTERVAL_S", "5"))  # seconds between readings
 

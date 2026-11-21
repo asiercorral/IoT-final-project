@@ -334,14 +334,16 @@ def test_without_grove_libraries_the_program_stops_with_a_message(monkeypatch, c
 # --- basic soil status (T-16) feeding the state -------------------------------
 
 
-@pytest.mark.parametrize(
-    "pct, expected",
-    [(None, "FAULT"), (0.0, "ATTENTION"), (14.9, "ATTENTION"), (15.0, "CHECK"),
-     (29.9, "CHECK"), (30.0, "NORMAL"), (100.0, "NORMAL")],
-)
-def test_basic_status_thresholds(pct, expected):
-    assert status.basic_status(pct) == expected
-
+def test_basic_status_thresholds():
+    # Thresholds come from the plant profile (T-23), so test against them
+    attention, check = status.ATTENTION_BELOW, status.CHECK_BELOW
+    assert status.basic_status(None) == "FAULT"
+    assert status.basic_status(0.0) == "ATTENTION"
+    assert status.basic_status(attention - 0.1) == "ATTENTION"
+    assert status.basic_status(attention) == "CHECK"
+    assert status.basic_status(check - 0.1) == "CHECK"
+    assert status.basic_status(check) == "NORMAL"
+    assert status.basic_status(100.0) == "NORMAL"
 
 @pytest.mark.parametrize("pct", [None, 5.0, 20.0, 60.0])
 def test_basic_status_gives_a_valid_state_message(pct):
