@@ -5,3 +5,7 @@
 #
 # Add each package here in the pull request that first imports it.
 paho-mqtt>=2.0,<3   # MQTT client: state publishing and the LED program
+
+requests>=2.31                      # forecast.py
+PyJWT[crypto]>=2.8                  # signed Euskalmet token; RS256 needs cryptography
+tzdata; sys_platform == "win32"     # time zones on Windows (Europe/Madrid)
