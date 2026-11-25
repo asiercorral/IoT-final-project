@@ -99,11 +99,44 @@ Example telemetry from the plan:
 
 Unavailable readings are JSON `null`. Add calibrated `soil_moisture_pct` after calibration; light is a relative percentage, not an uncalibrated claim of lux.
 
+## MQTT broker (T-19)
+
+Mosquitto runs on the Pi and every program connects to it. Programs on the Pi use `localhost:1883`; a laptop sets `PLANTPULSE_MQTT_HOST` to the Pi's address. Topic names live in `plantpulse/config.py`; they follow `plantpulse/<site>/<plant>/<kind>`, all lowercase.
+
+| Topic | Published by | Read by | Retained | QoS | Payload |
+|---|---|---|---|---|---|
+| `plantpulse/school01/plant01/telemetry` | `acquisition.py`, every 5 min (T-20) | storage subscriber (T-22) | no | 1 | One reading, as in the example above |
+| `plantpulse/school01/plant01/state` | `rule_engine.py --publish`, `status.py --publish`, `state.py` | `led_service.py`, web page | yes | 1 | State, status code and reason (`plantpulse/state.py`) |
+| `plantpulse/school01/plant01/status` | `acquisition.py`: `online` on connect, `offline` as its last will (T-20) | web page | yes | 1 | `online` or `offline` |
+
+Telemetry is not retained: every reading is a new message and the storage subscriber keeps it. State and status are retained, so a program that starts later gets the current value at once.
+
+Install on the Pi (once):
+
+```bash
+sudo apt install -y mosquitto mosquitto-clients
+sudo cp config/mosquitto/plantpulse.conf /etc/mosquitto/conf.d/
+sudo systemctl restart mosquitto
+systemctl is-enabled mosquitto      # "enabled": it starts at boot
+hostname -I                         # the Pi's address, for the laptop
+```
+
+Check from a laptop on the same network, with the Mosquitto clients installed:
+
+```bash
+mosquitto_sub -h <pi-address> -t "plantpulse/#" -v     # on the laptop: leave it running
+mosquitto_pub -t plantpulse/test -m "hello from the Pi" # on the Pi
+```
+
+The laptop prints `plantpulse/test hello from the Pi`. `python -m plantpulse.state NORMAL` on the Pi shows a real state message the same way.
+
+`config/mosquitto/plantpulse.conf` allows clients without a password, so anyone on the same network can read the readings and publish a fake state. This is accepted for the classroom demo; if the Pi joins a shared network, add a password file and client credentials.
+
 ## State screen (US-01)
 
 The signal for pupils is a Grove 16x2 LCD (White on Blue) on an **I2C port** of the Base HAT (address 0x3E). The state is published retained on `plantpulse/school01/plant01/state` (format in `plantpulse/state.py`). `plantpulse/led_service.py` follows that topic and rewrites the screen as soon as a new state arrives: a message on the first row and a 10-cell bar on the second. Normal: "All good", 2 cells; Check: "Check the plant", 5 cells; Attention: "Plant needs help", 10 cells. Fault shows "Sensor problem"; an unreadable message or no state shows "No plant state", never "All good". The printed legend is [docs/led-legend.pdf](docs/led-legend.pdf), drawn by `scripts/make_led_legend.py`.
 
-On the Pi, with Mosquitto running:
+On the Pi, with Mosquitto running (see [MQTT broker](#mqtt-broker-t-19)):
 
 ```bash
 python -m plantpulse.lcd                    # check the screen
