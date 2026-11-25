@@ -5,7 +5,8 @@ Every rule that applies adds one *finding*. The screen shows the most severe
 one (FAULT > ATTENTION > CHECK > NORMAL); the web page can list them all.
 Rules, from most to least severe:
 
-    FAULT      a sensor gives no valid reading
+    FAULT      a sensor gives no valid reading; no new reading for
+            ``STALE_AFTER_S`` seconds (acquisition stopped)
     ATTENTION  soil critically dry; soil saturated for ``saturated_h`` hours;
                air below ``severe_cold_below_c`` for ``duration_h`` hours
     CHECK      soil dry; soil wet for ``wet_check_h`` hours;
@@ -52,6 +53,10 @@ SEVERITY = {name: rank for rank, name in enumerate(state.STATES)}  # NORMAL lowe
 # A gap longer than this between two readings breaks a "wet for X hours" run,
 # so a Pi that was switched off is not counted as wet the whole time.
 MAX_GAP_S = 3 * config.READ_INTERVAL_S
+
+# The newest reading must be younger than this, otherwise the state is FAULT
+# (two missed readings = 10 min with the default interval of 5 min).
+STALE_AFTER_S = 2 * config.READ_INTERVAL_S
 
 
 # --- helpers -----------------------------------------------------------------
@@ -210,6 +215,18 @@ def evaluate(reading, profile, history=(), dry_mv=config.SOIL_DRY_MV, wet_mv=con
     message["findings"] = findings
     return message
 
+def stale_state(now, last_ts=None):
+    """FAULT message when there is no recent reading (acquisition stopped)."""
+    if last_ts is None:
+        reason = "No sensor readings arrive. Tell the teacher."
+    else:
+        minutes = (now - last_ts) / 60
+        reason = f"No new sensor reading for {minutes:.0f} min. Tell the teacher."
+    message = state.build_state("FAULT", reason, status_code="FAULT_STALE", timestamp=now)
+    message["soil_pct"] = None
+    message["findings"] = [_finding("sensors", "FAULT", "FAULT_STALE", reason)]
+    return message
+
 
 # --- reading the acquisition CSV ---------------------------------------------
 
@@ -241,16 +258,29 @@ def load_readings(path, since):
 
 
 def evaluate_latest(
-    csv_path, profile, clock=time.time, dry_mv=config.SOIL_DRY_MV, wet_mv=config.SOIL_WET_MV
+    csv_path,
+    profile,
+    clock=time.time,
+    dry_mv=config.SOIL_DRY_MV,
+    wet_mv=config.SOIL_WET_MV,
+    stale_after_s=STALE_AFTER_S,
 ):
-    """Evaluate the newest reading in the CSV, with enough history for the wet rules."""
+    """Evaluate the newest reading in the CSV, with enough history for the wet rules.
+
+    No reading, or a newest reading older than ``stale_after_s``, gives FAULT:
+    an old state must never stay on the screen as if it were current.
+    """
+    now = clock()
     window_h = max(
         profile["soil"]["saturated_h"], profile["soil"]["wet_check_h"], profile["air"]["duration_h"]
     ) + 1
-    readings = load_readings(csv_path, since=clock() - window_h * 3600)
+    readings = load_readings(csv_path, since=now - window_h * 3600)
     if not readings:
-        return None
-    return evaluate(readings[-1], profile, readings[:-1], dry_mv, wet_mv)
+        return stale_state(now)
+    latest = readings[-1]
+    if now - latest["timestamp"] > stale_after_s:
+        return stale_state(now, latest["timestamp"])
+    return evaluate(latest, profile, readings[:-1], dry_mv, wet_mv)
 
 
 # --- program -----------------------------------------------------------------
@@ -296,12 +326,11 @@ def main(argv=None):
     try:
         while True:
             message = evaluate_latest(args.csv, profile)
-            if message is None:
+            if message["status_code"] == "FAULT_STALE":
                 log.warning("no recent readings in %s; is the acquisition loop running?", args.csv)
-            else:
-                log.info("%s (%s): %s", message["state"], message["status_code"], message["reason"])
-                if client is not None:
-                    state.publish_state(client, message)
+            log.info("%s (%s): %s", message["state"], message["status_code"], message["reason"])
+            if client is not None:
+                state.publish_state(client, message)
             if args.once:
                 break
             time.sleep(args.interval)

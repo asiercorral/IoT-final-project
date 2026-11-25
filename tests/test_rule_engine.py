@@ -268,8 +268,35 @@ def test_missing_values_in_the_csv_become_none(tmp_path):
     assert loaded[0]["sensors"]["soil_moisture_raw"] == pytest.approx(mv(60))
 
 
-def test_no_csv_means_no_result(tmp_path, basil):
-    assert rule_engine.evaluate_latest(tmp_path / "missing.csv", basil, clock=lambda: NOW) is None
+def test_no_csv_is_a_fault(tmp_path, basil):
+    result = rule_engine.evaluate_latest(tmp_path / "missing.csv", basil, clock=lambda: NOW)
+
+    assert result["state"] == "FAULT"
+    assert result["status_code"] == "FAULT_STALE"
+
+
+def test_old_newest_reading_is_a_fault(tmp_path, basil):
+    path = tmp_path / "readings.csv"
+    write_csv(path, [reading(60, ts=NOW - 3 * HOUR)])  # acquisition stopped 3 h ago
+
+    result = rule_engine.evaluate_latest(
+        path, basil, clock=lambda: NOW, dry_mv=DRY_MV, wet_mv=WET_MV
+    )
+
+    assert result["state"] == "FAULT"
+    assert result["status_code"] == "FAULT_STALE"
+    assert "180 min" in result["reason"]
+
+
+def test_one_late_reading_is_not_a_fault(tmp_path, basil):
+    path = tmp_path / "readings.csv"
+    write_csv(path, [reading(60, ts=NOW - rule_engine.STALE_AFTER_S)])
+
+    result = rule_engine.evaluate_latest(
+        path, basil, clock=lambda: NOW, dry_mv=DRY_MV, wet_mv=WET_MV
+    )
+
+    assert result["state"] == "NORMAL"
 
 
 def test_status_py_uses_the_same_calibration():

@@ -11,8 +11,8 @@ Payload, one JSON object:
       "device_id": "plantpulse-school01-plant01",
       "timestamp": 1728920000,
       "state": "CHECK",
-      "status_code": "CHECK",
-      "reason": "Soil moisture index 24.0 % is below 30 %",
+      "status_code": "CHECK_DRY",
+      "reason": "Soil is getting dry (38 %). Feel the soil and water if it is dry below the surface.",
       "forecast": null
     }
 
