@@ -27,8 +27,7 @@ These two cups give the raw reference values for the soil probe (T-12, T-16).
 | Sample | How to prepare | Used as |
 | --- | --- | --- |
 | Dry cup | Fill with substrate, leave uncovered indoors for 2–3 days until dry to the touch | `PLANTPULSE_SOIL_DRY_MV` reference |
-| Wet cup | Fill with substrate, water until water drains from the bottom, wait 10 min | `PLANTPULSE_SOIL_WET_MV` reference |
-
+| Wet cup | Fill with substrate, water until water stands on the surface (waterlogged) | `PLANTPULSE_SOIL_WET_MV` reference (100 %) |
 Both cups need drainage holes and should be filled to at least the depth of the probe's sensing area.
 
 ## Probe placement
@@ -38,12 +37,3 @@ Following section 5 of the challenge report:
 - Insert the soil probe near the roots, a few centimetres away from the stem.
 - Bury only the sensing part; keep the electronics and the connector above the soil and away from watering.
 - Always use the same position and depth, so readings stay comparable over time. Mark the position on the pot edge.
-
-## Status
-
-- [ ] Basil plant bought and potted in the chosen substrate
-- [ ] Spare substrate available
-- [ ] Dry and wet calibration cups prepared
-- [ ] Photo added: `docs/img/plant.jpg`
-
-![Plant, pot and calibration cups](img/plant.jpg)

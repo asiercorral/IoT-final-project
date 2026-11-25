@@ -1,7 +1,6 @@
 """Tests for plantpulse.profile. They run on a laptop, no Pi needed."""
 
 import copy
-import json
 
 import pytest
 
