@@ -71,3 +71,17 @@ SOIL_WET_MV = _env_int("PLANTPULSE_SOIL_WET_MV", 1989)
 # Plant profile (T-23): config/plants/<name>.json
 PLANTS_DIR = ROOT_DIR / "config" / "plants"
 PLANT_PROFILE = os.environ.get("PLANTPULSE_PLANT", "basil")
+
+
+# Weather forecast (T-32, decision 001): Euskalmet first, Open-Meteo as fallback
+FORECAST_SOURCE = os.environ.get("FORECAST_SOURCE", "euskalmet")  # or "open-meteo"
+EUSKALMET_PRIVATE_KEY = ROOT_DIR / os.environ.get(
+    "EUSKALMET_PRIVATE_KEY", "secrets/euskalmet_private.pem"
+)
+EUSKALMET_EMAIL = os.environ.get("EUSKALMET_EMAIL", "")
+LATITUDE, LONGITUDE = 43.26, -2.93  # Bilbao, for Open-Meteo
+FORECAST_CACHE = DATA_DIR / "forecast_cache.json"
+# Download a new forecast at most this often; in between the cache is used.
+FORECAST_REFRESH_S = _env_int("PLANTPULSE_FORECAST_REFRESH_S", 3600)
+# A forecast older than this is outdated and never delays advice (T-34).
+FORECAST_MAX_AGE_S = 6 * 3600
