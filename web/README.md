@@ -15,7 +15,7 @@ Then open http://127.0.0.1:5000/
 | Route | Purpose |
 |---|---|
 | `GET /` | Local page: status, explanation and soil moisture chart |
-| `GET /api/status` | Current state, reason, explanation and latest readings (JSON) |
+| `GET /api/status` | Current state, reason, explanation, latest readings and the forecast used (JSON) |
 | `GET /api/history?hours=24` | Timestamped readings for the requested period (JSON) |
 
 ## Notes
@@ -23,3 +23,10 @@ Then open http://127.0.0.1:5000/
 - The chart is plain SVG with no external library, so the page works without Internet.
 - Data is currently dummy data. It will be replaced by the local database.
 - `explanation` is an extra field added to `/api/status`.
+- `forecast` in `/api/status` is `forecast.forecast_summary` (status `fresh`, `outdated` or
+  `unavailable`, source, age, rain in mm) plus `used` and `why`. It is read from the local
+  cache that `plantpulse/forecast.py` writes, so the page never waits for the Internet.
+  Run `python -m plantpulse.forecast` once to fill the cache.
+- `why` follows the README rules: a forecast older than 6 h or unavailable is never used,
+  and rain only changes the advice for a plant exposed to rain (`rain_exposed` in the
+  plant profile).
