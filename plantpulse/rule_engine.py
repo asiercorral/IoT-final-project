@@ -6,12 +6,13 @@ one (FAULT > ATTENTION > CHECK > NORMAL); the web page can list them all.
 Rules, from most to least severe:
 
     FAULT      a sensor gives no valid reading; no new reading for
-            ``STALE_AFTER_S`` seconds (acquisition stopped)
+               ``STALE_AFTER_S`` seconds (acquisition stopped)
     ATTENTION  soil critically dry; soil saturated for ``saturated_h`` hours;
                air below ``severe_cold_below_c`` for ``duration_h`` hours
     CHECK      soil dry; soil wet for ``wet_check_h`` hours;
                air below ``cold_below_c`` or above ``hot_above_c`` for ``duration_h`` hours
-    NORMAL     everything within the profile
+    NORMAL     everything within the profile; or soil dry, but rain is
+               expected and reaches the plant (WAIT_RAIN, T-33)
 
 Temperature rules wait ``duration_h`` so that one noisy DHT reading near a
 limit does not make the screen jump. When two findings are equally severe,
@@ -24,7 +25,13 @@ Run on the Pi next to the acquisition loop, which writes the readings CSV:
     python -m plantpulse.rule_engine --publish          # also publish to the screen
     python -m plantpulse.rule_engine --once             # evaluate the last reading, exit
 
-Rain forecasts (T-33, T-34) and persistent low light (T-42) come later.
+Rain (T-33, T-34): a fresh forecast with at least ``rain.min_mm`` in the next
+``rain.window_h`` hours turns "soil getting dry" (CHECK_DRY) into WAIT_RAIN,
+but only for a plant with ``rain_exposed: true``. It never delays
+ATTENTION_DRY. A forecast older than 6 h or missing is shown as outdated or
+unavailable and changes nothing.
+
+Persistent low light (T-42) comes later.
 """
 
 from __future__ import annotations
@@ -36,7 +43,7 @@ import signal
 import time
 from pathlib import Path
 
-from plantpulse import config, state
+from plantpulse import config, forecast, state
 from plantpulse.profile import load_profile
 
 log = logging.getLogger(__name__)
@@ -99,6 +106,38 @@ def _finding(sensor, level, code, reason):
     return {"sensor": sensor, "level": level, "code": code, "reason": reason}
 
 
+# --- rain (T-33, T-34) ---------------------------------------------------------
+
+
+def rain_delays_prompt(profile, summary):
+    """T-33: rain may delay a "soil getting dry" prompt only if it reaches the
+    plant and the forecast is fresh. Callers never ask this for critically
+    dry soil."""
+    return (
+        profile["rain_exposed"]
+        and summary["status"] == "fresh"
+        and summary["rain_mm"] >= profile["rain"]["min_mm"]
+    )
+
+
+def rain_note(profile, summary):
+    """One sentence for the web page: which forecast was used and why the
+    advice waits for rain or not (T-35)."""
+    window = summary["window_h"]
+    if not profile["rain_exposed"]:
+        return "The plant is sheltered, so rain does not change the advice."
+    if summary["status"] == "unavailable":
+        return "No forecast available, so the advice does not wait for rain."
+    if summary["status"] == "outdated":
+        return (f"The forecast is {summary['age_h']:.0f} h old (outdated), "
+                "so the advice does not wait for rain.")
+    if rain_delays_prompt(profile, summary):
+        return (f"{summary['rain_mm']:.1f} mm of rain expected in the next {window} h: "
+                "a dry-soil reminder waits for the rain.")
+    return (f"Only {summary['rain_mm']:.1f} mm of rain expected in the next {window} h: "
+            "not enough to wait for.")
+
+
 # --- rules -------------------------------------------------------------------
 
 
@@ -112,8 +151,11 @@ def _fault_rule(sensors):
     )
 
 
-def _soil_rule(pct, history, now, soil):
-    """At most one soil finding: dry and wet cannot both be true."""
+def _soil_rule(pct, history, now, soil, rain_mm=None):
+    """At most one soil finding: dry and wet cannot both be true.
+
+    ``rain_mm`` is set only when rain may delay the prompt (``rain_delays_prompt``).
+    """
     if pct is None:
         return None  # already reported by the fault rule
     if pct < soil["critical_below_pct"]:
@@ -127,6 +169,10 @@ def _soil_rule(pct, history, now, soil):
                         "Do not water; empty the saucer so the roots get air.")
 
     if pct < soil["dry_below_pct"]:
+        if rain_mm is not None:
+            return _finding("soil", "NORMAL", "WAIT_RAIN",
+                            f"Soil is getting dry ({pct:.0f} %), but {rain_mm:.1f} mm of rain "
+                            "is expected soon. No need to water now.")
         return _finding("soil", "CHECK", "CHECK_DRY",
                         f"Soil is getting dry ({pct:.0f} %). "
                         "Feel the soil and water if it is dry below the surface.")
@@ -166,15 +212,25 @@ def _air_rule(temperature, history, now, air):
 # --- evaluation --------------------------------------------------------------
 
 
-def evaluate(reading, profile, history=(), dry_mv=config.SOIL_DRY_MV, wet_mv=config.SOIL_WET_MV):
+def evaluate(
+    reading,
+    profile,
+    history=(),
+    dry_mv=config.SOIL_DRY_MV,
+    wet_mv=config.SOIL_WET_MV,
+    forecast_data=None,
+):
     """Decide the plant state for one reading.
 
     ``reading`` is one telemetry reading ({"timestamp", "sensors"}) as built by
     ``acquisition.build_reading``. ``history`` holds earlier readings in the
     same format, oldest first; it is only needed for the wet rules.
+    ``forecast_data`` is the result of ``forecast.get_forecast()``, or None.
 
     Returns a state message in the format of ``state.build_state`` with two
     extra keys: ``soil_pct`` and ``findings`` (every finding, most severe first).
+    Its ``forecast`` is the forecast summary with ``used`` (did it change the
+    advice?) and ``note`` (why or why not).
     """
     now = reading["timestamp"]
     sensors = reading["sensors"]
@@ -191,11 +247,14 @@ def evaluate(reading, profile, history=(), dry_mv=config.SOIL_DRY_MV, wet_mv=con
     air_series = [(r["timestamp"], r["sensors"].get("temperature_c")) for r in earlier]
     air_series.append((now, temperature))
 
+    rain = forecast.forecast_summary(forecast_data, now, profile["rain"]["window_h"])
+    delay_mm = rain["rain_mm"] if rain_delays_prompt(profile, rain) else None
+
     findings = [
         f
         for f in (
             _fault_rule(sensors),
-            _soil_rule(pct, soil_series, now, profile["soil"]),
+            _soil_rule(pct, soil_series, now, profile["soil"], delay_mm),
             _air_rule(temperature, air_series, now, profile["air"]),
         )
         if f is not None
@@ -210,10 +269,13 @@ def evaluate(reading, profile, history=(), dry_mv=config.SOIL_DRY_MV, wet_mv=con
         level, code = "NORMAL", "OK"
         reason = f"Soil moisture is fine ({pct:.0f} %)."
 
-    message = state.build_state(level, reason, status_code=code, timestamp=now)
+    rain["used"] = any(f["code"] == "WAIT_RAIN" for f in findings)
+    rain["note"] = rain_note(profile, rain)
+    message = state.build_state(level, reason, status_code=code, forecast=rain, timestamp=now)
     message["soil_pct"] = pct
     message["findings"] = findings
     return message
+
 
 def stale_state(now, last_ts=None):
     """FAULT message when there is no recent reading (acquisition stopped)."""
@@ -264,6 +326,7 @@ def evaluate_latest(
     dry_mv=config.SOIL_DRY_MV,
     wet_mv=config.SOIL_WET_MV,
     stale_after_s=STALE_AFTER_S,
+    forecast_data=None,
 ):
     """Evaluate the newest reading in the CSV, with enough history for the wet rules.
 
@@ -280,7 +343,7 @@ def evaluate_latest(
     latest = readings[-1]
     if now - latest["timestamp"] > stale_after_s:
         return stale_state(now, latest["timestamp"])
-    return evaluate(latest, profile, readings[:-1], dry_mv, wet_mv)
+    return evaluate(latest, profile, readings[:-1], dry_mv, wet_mv, forecast_data)
 
 
 # --- program -----------------------------------------------------------------
@@ -305,6 +368,8 @@ def main(argv=None):
                         help=f"publish the state to {config.TOPIC_STATE}")
     parser.add_argument("--host", default=config.MQTT_HOST)
     parser.add_argument("--port", type=int, default=config.MQTT_PORT)
+    parser.add_argument("--no-forecast", action="store_true",
+                        help="do not download a forecast (it then counts as unavailable)")
     args = parser.parse_args(argv)
 
     logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s")
@@ -325,7 +390,9 @@ def main(argv=None):
 
     try:
         while True:
-            message = evaluate_latest(args.csv, profile)
+            # At most one download per hour; otherwise the cache (forecast.py)
+            forecast_data = None if args.no_forecast else forecast.get_forecast()
+            message = evaluate_latest(args.csv, profile, forecast_data=forecast_data)
             if message["status_code"] == "FAULT_STALE":
                 log.warning("no recent readings in %s; is the acquisition loop running?", args.csv)
             log.info("%s (%s): %s", message["state"], message["status_code"], message["reason"])
