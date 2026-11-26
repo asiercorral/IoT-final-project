@@ -132,6 +132,18 @@ The laptop prints `plantpulse/test hello from the Pi`. `python -m plantpulse.sta
 
 `config/mosquitto/plantpulse.conf` allows clients without a password, so anyone on the same network can read the readings and publish a fake state. This is accepted for the classroom demo; if the Pi joins a shared network, add a password file and client credentials.
 
+## Storage (T-21)
+
+The sensor history is kept in **SQLite**, one file on the Pi: `data/plantpulse.db` ([decision 002](docs/decisions/002-database.md)). The table `readings` has a row per reading and a column per sensor, with the telemetry names: `device_id`, `timestamp` (Unix seconds), `temperature_c`, `humidity_pct`, `soil_moisture_raw`, `light_pct`. A missing value is `NULL`. The MQTT subscriber (T-22) writes it; the web API (T-28) and Grafana (T-31) only read it.
+
+Create it on the Pi (once; repeating it keeps the rows):
+
+```bash
+sudo apt install -y sqlite3                         # command-line tool to look inside
+python -m plantpulse.storage                        # creates data/plantpulse.db
+sqlite3 data/plantpulse.db ".schema readings"       # shows the table
+```
+
 ## State screen (US-01)
 
 The signal for pupils is a Grove 16x2 LCD (White on Blue) on an **I2C port** of the Base HAT (address 0x3E). The state is published retained on `plantpulse/school01/plant01/state` (format in `plantpulse/state.py`). `plantpulse/led_service.py` follows that topic and rewrites the screen as soon as a new state arrives: a message on the first row and a 10-cell bar on the second. Normal: "All good", 2 cells; Check: "Check the plant", 5 cells; Attention: "Plant needs help", 10 cells. Fault shows "Sensor problem"; an unreadable message or no state shows "No plant state", never "All good". The printed legend is [docs/led-legend.pdf](docs/led-legend.pdf), drawn by `scripts/make_led_legend.py`.
@@ -152,7 +164,7 @@ python -m plantpulse.led_service --demo     # the three screens, no MQTT
 - Grove modules, ports and Pi 5 drivers: T-05 (#7).
 - Demo plant and substrate: T-06 (#33).
 - Forecast provider: Euskalmet spike T-17 (#34), then document the fallback if needed.
-- SQLite or InfluxDB: T-21 (#50).
+- Database: SQLite, [decision 002](docs/decisions/002-database.md) (T-21, #50).
 - Full-chain validation: T-43 (#38).
 - Rebuild instructions and wiring evidence: T-47 (#64).
 

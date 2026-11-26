@@ -52,6 +52,9 @@ READ_INTERVAL_S = _env_int("PLANTPULSE_READ_INTERVAL_S", 300)
 DATA_DIR = ROOT_DIR / os.environ.get("PLANTPULSE_DATA_DIR", "data")
 READINGS_CSV = DATA_DIR / "readings.csv"
 
+# Storage (T-21, decision 002): the sensor history, one SQLite file
+DB_PATH = DATA_DIR / "plantpulse.db"
+
 # Grove ports on the Base HAT (confirm against the wiring, T-05)
 ADC_I2C_ADDRESS = _env_int("PLANTPULSE_ADC_I2C_ADDRESS", 0x08)
 SOIL_ADC_CHANNEL = _env_int("PLANTPULSE_SOIL_ADC_CHANNEL", 0)    # port A0
