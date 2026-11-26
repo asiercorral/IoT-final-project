@@ -2,13 +2,23 @@ from flask import Flask, jsonify, request
 
 app = Flask(__name__)
 
-# Dummy data, to be replaced by the local database (Ibon) later
+# Dummy data, to be replaced by the local database (Ibon)
 CURRENT = {
     "device_id": "plantpulse-school01-plant01",
     "status_code": "CHECK_MOISTURE",
     "reason": "Soil is dry",
     "sensors": {"temperature_c": 19.5, "humidity_pct": 78.0,
                 "soil_moisture_raw": 420, "light_pct": 63.5},
+}
+
+# Dummy forecast, to be replaced by the forecast service (Elias).
+# Forecasts older than 6 hours are considered stale (README rule).
+FORECAST = {
+    "source": "Open-Meteo (test data)",
+    "age_hours": 2,
+    "rain_mm": 0.0,
+    "used": True,
+    "why": "No rain expected in the next hours, so the watering advice is not delayed.",
 }
 
 HISTORY = [
@@ -31,6 +41,7 @@ PAGE = """<!doctype html>
 <style>
   body { font-family: sans-serif; max-width: 640px; margin: 2rem auto; padding: 0 1rem; }
   .card { background: #eef6ee; border-radius: 8px; padding: 1rem; margin-bottom: 1rem; }
+  .forecast { background: #eef2f8; }
   svg { width: 100%; height: auto; background: #fafafa; border: 1px solid #ddd; }
 </style>
 </head>
@@ -41,6 +52,11 @@ PAGE = """<!doctype html>
     <p id="reason"></p>
     <p id="explanation"></p>
   </div>
+  <div class="card forecast">
+    <h3>Forecast used</h3>
+    <p id="forecast-source"></p>
+    <p id="forecast-why"></p>
+  </div>
   <h2>Soil moisture history</h2>
   <svg id="chart" viewBox="0 0 600 240"></svg>
   <script>
@@ -49,6 +65,11 @@ PAGE = """<!doctype html>
       document.getElementById('status').textContent = s.status_code;
       document.getElementById('reason').textContent = s.reason;
       document.getElementById('explanation').textContent = s.explanation;
+
+      const f = s.forecast;
+      document.getElementById('forecast-source').textContent =
+        f.source + ' - updated ' + f.age_hours + ' h ago - rain: ' + f.rain_mm + ' mm';
+      document.getElementById('forecast-why').textContent = f.why;
 
       const h = await (await fetch('/api/history?hours=24')).json();
       drawChart(h.readings);
@@ -80,9 +101,10 @@ PAGE = """<!doctype html>
 
 @app.get("/api/status")
 def status():
-    """Current plant state, latest readings and short explanation."""
+    """Current plant state, latest readings, explanation and forecast used."""
     data = dict(CURRENT)
     data["explanation"] = EXPLANATIONS.get(CURRENT["status_code"], "")
+    data["forecast"] = FORECAST
     return jsonify(data)
 
 
@@ -95,7 +117,7 @@ def history():
 
 @app.get("/")
 def index():
-    """Local page: status, explanation and history chart."""
+    """Local page: status, explanation, forecast used and history chart."""
     return PAGE
 
 
