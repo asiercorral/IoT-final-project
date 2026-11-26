@@ -23,6 +23,24 @@ EXPLANATIONS = {
     "CHECK_MOISTURE": "The soil moisture is low. Check the soil and water the plant if it feels dry.",
 }
 
+EXPLANATIONS["FAULT"] = "A sensor gives no valid reading. Check its connection and wiring."
+
+SENSOR_LABELS = {
+    "temperature_c": "Temperature sensor",
+    "humidity_pct": "Air humidity sensor",
+    "soil_moisture_raw": "Soil moisture sensor",
+    "light_pct": "Light sensor",
+}
+
+
+def find_faulty_sensors(sensors):
+    """Return the sensors with no valid reading (null/None, as in the README)."""
+    return [
+        {"sensor": key, "label": label, "reason": "No valid reading"}
+        for key, label in SENSOR_LABELS.items()
+        if sensors.get(key) is None
+    ]
+
 PAGE = """<!doctype html>
 <html>
 <head>
@@ -32,11 +50,13 @@ PAGE = """<!doctype html>
   body { font-family: sans-serif; max-width: 640px; margin: 2rem auto; padding: 0 1rem; }
   .card { background: #eef6ee; border-radius: 8px; padding: 1rem; margin-bottom: 1rem; }
   svg { width: 100%; height: auto; background: #fafafa; border: 1px solid #ddd; }
+  .fault { background: #fdecea; }
 </style>
 </head>
 <body>
   <h1>PlantPulse</h1>
   <div class="card">
+    <div class="card" id="faults"></div>
     <h2 id="status">Loading...</h2>
     <p id="reason"></p>
     <p id="explanation"></p>
@@ -45,10 +65,18 @@ PAGE = """<!doctype html>
   <svg id="chart" viewBox="0 0 600 240"></svg>
   <script>
     async function load() {
-      const s = await (await fetch('/api/status')).json();
+      const s = await (await fetch('/api/status' + location.search)).json();
       document.getElementById('status').textContent = s.status_code;
       document.getElementById('reason').textContent = s.reason;
       document.getElementById('explanation').textContent = s.explanation;
+            const fl = document.getElementById('faults');
+      if (s.faulty_sensors.length) {
+        fl.className = 'card fault';
+        fl.textContent = 'Faulty sensor: ' +
+          s.faulty_sensors.map(x => x.label + ' (' + x.reason + ')').join(', ');
+      } else {
+        fl.textContent = 'All sensors are working.';
+      }
 
       const h = await (await fetch('/api/history?hours=24')).json();
       drawChart(h.readings);
@@ -80,9 +108,23 @@ PAGE = """<!doctype html>
 
 @app.get("/api/status")
 def status():
-    """Current plant state, latest readings and short explanation."""
+    """Current state, readings, explanation, forecast and faulty sensors."""
     data = dict(CURRENT)
-    data["explanation"] = EXPLANATIONS.get(CURRENT["status_code"], "")
+    sensors = dict(CURRENT["sensors"])
+
+    # Test only: /api/status?simulate_fault=soil_moisture_raw
+    simulated = request.args.get("simulate_fault")
+    if simulated in sensors:
+        sensors[simulated] = None
+
+    faulty = find_faulty_sensors(sensors)
+    data["sensors"] = sensors
+    data["faulty_sensors"] = faulty
+    if faulty:
+        data["status_code"] = "FAULT"
+        data["reason"] = "Faulty sensor: " + ", ".join(f["label"] for f in faulty)
+    data["explanation"] = EXPLANATIONS.get(data["status_code"], "")
+    data["forecast"] = FORECAST
     return jsonify(data)
 
 
