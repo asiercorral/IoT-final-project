@@ -155,6 +155,85 @@ def test_no_findings_when_everything_is_fine():
     assert result["reason"].startswith("Soil moisture is fine")
 
 
+# --- rain (T-33) and outdated forecasts (T-34) ----------------------------------
+
+
+def forecast_data(mm_per_hour=1.0, fetched_ago_s=0):
+    """A forecast with the same rain every hour around NOW (6 h window: >= 6 mm at 1 mm/h)."""
+    start = NOW - NOW % HOUR - HOUR
+    return {
+        "source": "euskalmet",
+        "fetched_at": NOW - fetched_ago_s,
+        "hours": [[start + i * HOUR, mm_per_hour] for i in range(48)],
+    }
+
+
+@pytest.fixture
+def exposed(basil):
+    profile = copy.deepcopy(basil)
+    profile["rain_exposed"] = True
+    return profile
+
+
+def evaluate_with(profile, soil_pct, rain):
+    return rule_engine.evaluate(
+        reading(soil_pct), profile, (), dry_mv=DRY_MV, wet_mv=WET_MV, forecast_data=rain
+    )
+
+
+def test_sheltered_plant_ignores_rain(basil):
+    result = evaluate_with(basil, 30, forecast_data())
+    assert result["status_code"] == "CHECK_DRY"
+    assert result["forecast"]["used"] is False
+    assert "sheltered" in result["forecast"]["note"]
+
+
+def test_exposed_plant_with_rain_waits(exposed):
+    result = evaluate_with(exposed, 30, forecast_data())
+    assert result["state"] == "NORMAL"
+    assert result["status_code"] == "WAIT_RAIN"
+    assert result["forecast"]["used"] is True
+
+
+def test_exposed_plant_critically_dry_never_waits(exposed):
+    result = evaluate_with(exposed, 10, forecast_data())
+    assert result["status_code"] == "ATTENTION_DRY"
+    assert result["forecast"]["used"] is False
+
+
+def test_too_little_rain_does_not_delay(exposed):
+    result = evaluate_with(exposed, 30, forecast_data(mm_per_hour=0.1))  # < 1 mm in 6 h
+    assert result["status_code"] == "CHECK_DRY"
+    assert "not enough" in result["forecast"]["note"]
+
+
+def test_rain_does_not_change_normal_soil(exposed):
+    assert evaluate_with(exposed, 60, forecast_data())["status_code"] == "OK"
+
+
+def test_outdated_forecast_is_labelled_and_ignored(exposed):
+    result = evaluate_with(exposed, 30, forecast_data(fetched_ago_s=7 * HOUR))
+    assert result["status_code"] == "CHECK_DRY"
+    assert result["forecast"]["status"] == "outdated"
+    assert result["forecast"]["used"] is False
+    assert "outdated" in result["forecast"]["note"]
+
+
+def test_missing_forecast_is_unavailable_and_ignored(exposed):
+    result = evaluate_with(exposed, 30, None)
+    assert result["status_code"] == "CHECK_DRY"
+    assert result["forecast"]["status"] == "unavailable"
+
+
+def test_evaluate_latest_passes_the_forecast_on(tmp_path, exposed):
+    path = tmp_path / "readings.csv"
+    write_csv(path, [reading(30)])
+    result = rule_engine.evaluate_latest(
+        path, exposed, clock=lambda: NOW, dry_mv=DRY_MV, wet_mv=WET_MV, forecast_data=forecast_data()
+    )
+    assert result["status_code"] == "WAIT_RAIN"
+
+
 # --- air temperature ----------------------------------------------------------
 # basil: severe cold < 5 °C, cold < 12 °C, hot > 35 °C, each for 0.5 h
 
