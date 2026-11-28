@@ -1,0 +1,775 @@
+{
+  "uid": "plantpulse",
+  "title": "PlantPulse – plant readings",
+  "description": "Current value and history of the four PlantPulse readings (T-31). Data: data/plantpulse.db on the Pi.",
+  "tags": [
+    "plantpulse"
+  ],
+  "timezone": "browser",
+  "editable": true,
+  "graphTooltip": 1,
+  "refresh": "1m",
+  "time": {
+    "from": "now-24h",
+    "to": "now"
+  },
+  "timepicker": {
+    "refresh_intervals": [
+      "1m",
+      "5m",
+      "15m"
+    ]
+  },
+  "schemaVersion": 39,
+  "version": 1,
+  "links": [],
+  "annotations": {
+    "list": []
+  },
+  "templating": {
+    "list": [
+      {
+        "type": "constant",
+        "name": "device",
+        "label": "Device",
+        "query": "plantpulse-school01-plant01",
+        "hide": 2,
+        "skipUrlSync": true,
+        "current": {
+          "text": "plantpulse-school01-plant01",
+          "value": "plantpulse-school01-plant01"
+        },
+        "options": [
+          {
+            "text": "plantpulse-school01-plant01",
+            "value": "plantpulse-school01-plant01",
+            "selected": true
+          }
+        ]
+      },
+      {
+        "type": "constant",
+        "name": "dry_mv",
+        "label": "Soil dry reference (mV)",
+        "query": "118",
+        "hide": 2,
+        "skipUrlSync": true,
+        "current": {
+          "text": "118",
+          "value": "118"
+        },
+        "options": [
+          {
+            "text": "118",
+            "value": "118",
+            "selected": true
+          }
+        ]
+      },
+      {
+        "type": "constant",
+        "name": "wet_mv",
+        "label": "Soil wet reference (mV)",
+        "query": "1989",
+        "hide": 2,
+        "skipUrlSync": true,
+        "current": {
+          "text": "1989",
+          "value": "1989"
+        },
+        "options": [
+          {
+            "text": "1989",
+            "value": "1989",
+            "selected": true
+          }
+        ]
+      }
+    ]
+  },
+  "panels": [
+    {
+      "type": "stat",
+      "title": "Soil moisture now",
+      "description": "Calibrated soil index: 0 % = dry substrate, 100 % = waterlogged substrate (T-12). Dashed lines: the basil profile's Check (45 %) and Attention (20 %) thresholds. Latest reading.",
+      "datasource": {
+        "type": "frser-sqlite-datasource",
+        "uid": "plantpulse-sqlite"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 0,
+        "w": 5,
+        "h": 5
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "frser-sqlite-datasource",
+            "uid": "plantpulse-sqlite"
+          },
+          "queryType": "table",
+          "queryText": "SELECT timestamp AS time, MAX(0.0, MIN(100.0, ROUND((soil_moisture_raw - $dry_mv) * 100.0 / ($wet_mv - $dry_mv), 1))) AS \"Soil moisture\" FROM readings\nWHERE device_id = '$device'\nORDER BY timestamp DESC LIMIT 1",
+          "rawQueryText": "SELECT timestamp AS time, MAX(0.0, MIN(100.0, ROUND((soil_moisture_raw - $dry_mv) * 100.0 / ($wet_mv - $dry_mv), 1))) AS \"Soil moisture\" FROM readings\nWHERE device_id = '$device'\nORDER BY timestamp DESC LIMIT 1",
+          "timeColumns": [
+            "time"
+          ]
+        }
+      ],
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "last"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "colorMode": "value",
+        "graphMode": "none",
+        "textMode": "value",
+        "justifyMode": "center",
+        "orientation": "auto",
+        "showPercentChange": false,
+        "wideLayout": true
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percent",
+          "decimals": 1,
+          "min": 0,
+          "max": 100,
+          "noValue": "No valid reading",
+          "color": {
+            "mode": "thresholds"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "red",
+                "value": null
+              },
+              {
+                "color": "#EAB839",
+                "value": 20
+              },
+              {
+                "color": "green",
+                "value": 45
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "id": 1
+    },
+    {
+      "type": "stat",
+      "title": "Light now",
+      "description": "Relative light level from the Grove light sensor, not lux. Latest reading.",
+      "datasource": {
+        "type": "frser-sqlite-datasource",
+        "uid": "plantpulse-sqlite"
+      },
+      "gridPos": {
+        "x": 5,
+        "y": 0,
+        "w": 5,
+        "h": 5
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "frser-sqlite-datasource",
+            "uid": "plantpulse-sqlite"
+          },
+          "queryType": "table",
+          "queryText": "SELECT timestamp AS time, light_pct AS \"Light\" FROM readings\nWHERE device_id = '$device'\nORDER BY timestamp DESC LIMIT 1",
+          "rawQueryText": "SELECT timestamp AS time, light_pct AS \"Light\" FROM readings\nWHERE device_id = '$device'\nORDER BY timestamp DESC LIMIT 1",
+          "timeColumns": [
+            "time"
+          ]
+        }
+      ],
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "last"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "colorMode": "value",
+        "graphMode": "none",
+        "textMode": "value",
+        "justifyMode": "center",
+        "orientation": "auto",
+        "showPercentChange": false,
+        "wideLayout": true
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percent",
+          "decimals": 1,
+          "min": 0,
+          "max": 100,
+          "noValue": "No valid reading",
+          "color": {
+            "mode": "thresholds"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "#2a78d6",
+                "value": null
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "id": 2
+    },
+    {
+      "type": "stat",
+      "title": "Air temperature now",
+      "description": "Air temperature next to the plant (DHT sensor). Latest reading.",
+      "datasource": {
+        "type": "frser-sqlite-datasource",
+        "uid": "plantpulse-sqlite"
+      },
+      "gridPos": {
+        "x": 10,
+        "y": 0,
+        "w": 5,
+        "h": 5
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "frser-sqlite-datasource",
+            "uid": "plantpulse-sqlite"
+          },
+          "queryType": "table",
+          "queryText": "SELECT timestamp AS time, temperature_c AS \"Air temperature\" FROM readings\nWHERE device_id = '$device'\nORDER BY timestamp DESC LIMIT 1",
+          "rawQueryText": "SELECT timestamp AS time, temperature_c AS \"Air temperature\" FROM readings\nWHERE device_id = '$device'\nORDER BY timestamp DESC LIMIT 1",
+          "timeColumns": [
+            "time"
+          ]
+        }
+      ],
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "last"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "colorMode": "value",
+        "graphMode": "none",
+        "textMode": "value",
+        "justifyMode": "center",
+        "orientation": "auto",
+        "showPercentChange": false,
+        "wideLayout": true
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "celsius",
+          "decimals": 1,
+          "min": null,
+          "max": null,
+          "noValue": "No valid reading",
+          "color": {
+            "mode": "thresholds"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "#2a78d6",
+                "value": null
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "id": 3
+    },
+    {
+      "type": "stat",
+      "title": "Air humidity now",
+      "description": "Relative air humidity next to the plant (DHT sensor). Context only. Latest reading.",
+      "datasource": {
+        "type": "frser-sqlite-datasource",
+        "uid": "plantpulse-sqlite"
+      },
+      "gridPos": {
+        "x": 15,
+        "y": 0,
+        "w": 5,
+        "h": 5
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "frser-sqlite-datasource",
+            "uid": "plantpulse-sqlite"
+          },
+          "queryType": "table",
+          "queryText": "SELECT timestamp AS time, humidity_pct AS \"Air humidity\" FROM readings\nWHERE device_id = '$device'\nORDER BY timestamp DESC LIMIT 1",
+          "rawQueryText": "SELECT timestamp AS time, humidity_pct AS \"Air humidity\" FROM readings\nWHERE device_id = '$device'\nORDER BY timestamp DESC LIMIT 1",
+          "timeColumns": [
+            "time"
+          ]
+        }
+      ],
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "last"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "colorMode": "value",
+        "graphMode": "none",
+        "textMode": "value",
+        "justifyMode": "center",
+        "orientation": "auto",
+        "showPercentChange": false,
+        "wideLayout": true
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percent",
+          "decimals": 1,
+          "min": 0,
+          "max": 100,
+          "noValue": "No valid reading",
+          "color": {
+            "mode": "thresholds"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "#2a78d6",
+                "value": null
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "id": 4
+    },
+    {
+      "type": "stat",
+      "title": "Last reading",
+      "description": "Time since the newest stored reading. Red after 15 min (three missed 5-minute cycles): the Pi, the acquisition or the MQTT subscriber stopped.",
+      "datasource": {
+        "type": "frser-sqlite-datasource",
+        "uid": "plantpulse-sqlite"
+      },
+      "gridPos": {
+        "x": 20,
+        "y": 0,
+        "w": 4,
+        "h": 5
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "frser-sqlite-datasource",
+            "uid": "plantpulse-sqlite"
+          },
+          "queryType": "table",
+          "queryText": "SELECT CAST(strftime('%s', 'now') AS INTEGER) - MAX(timestamp) AS \"Last reading\"\nFROM readings WHERE device_id = '$device'",
+          "rawQueryText": "SELECT CAST(strftime('%s', 'now') AS INTEGER) - MAX(timestamp) AS \"Last reading\"\nFROM readings WHERE device_id = '$device'",
+          "timeColumns": [
+            "time"
+          ]
+        }
+      ],
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "last"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "colorMode": "value",
+        "graphMode": "none",
+        "textMode": "value",
+        "justifyMode": "center",
+        "orientation": "auto",
+        "showPercentChange": false,
+        "wideLayout": true
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "s",
+          "decimals": 0,
+          "noValue": "No readings yet",
+          "color": {
+            "mode": "thresholds"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 900
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "id": 5
+    },
+    {
+      "type": "timeseries",
+      "title": "Soil moisture",
+      "description": "Calibrated soil index: 0 % = dry substrate, 100 % = waterlogged substrate (T-12). Dashed lines: the basil profile's Check (45 %) and Attention (20 %) thresholds.",
+      "datasource": {
+        "type": "frser-sqlite-datasource",
+        "uid": "plantpulse-sqlite"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 5,
+        "w": 12,
+        "h": 9
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "frser-sqlite-datasource",
+            "uid": "plantpulse-sqlite"
+          },
+          "queryType": "time series",
+          "queryText": "SELECT timestamp AS time, MAX(0.0, MIN(100.0, ROUND((soil_moisture_raw - $dry_mv) * 100.0 / ($wet_mv - $dry_mv), 1))) AS \"Soil moisture\" FROM readings\nWHERE device_id = '$device'\n  AND timestamp >= ${__from:date:seconds} AND timestamp <= ${__to:date:seconds}\nORDER BY timestamp",
+          "rawQueryText": "SELECT timestamp AS time, MAX(0.0, MIN(100.0, ROUND((soil_moisture_raw - $dry_mv) * 100.0 / ($wet_mv - $dry_mv), 1))) AS \"Soil moisture\" FROM readings\nWHERE device_id = '$device'\n  AND timestamp >= ${__from:date:seconds} AND timestamp <= ${__to:date:seconds}\nORDER BY timestamp",
+          "timeColumns": [
+            "time"
+          ]
+        }
+      ],
+      "options": {
+        "legend": {
+          "showLegend": false,
+          "displayMode": "list",
+          "placement": "bottom"
+        },
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percent",
+          "decimals": 1,
+          "min": 0,
+          "max": 100,
+          "color": {
+            "mode": "fixed",
+            "fixedColor": "#2a78d6"
+          },
+          "custom": {
+            "drawStyle": "line",
+            "lineWidth": 2,
+            "lineInterpolation": "linear",
+            "fillOpacity": 8,
+            "gradientMode": "none",
+            "showPoints": "never",
+            "pointSize": 4,
+            "spanNulls": false,
+            "insertNulls": 900000,
+            "axisPlacement": "auto",
+            "axisLabel": "",
+            "thresholdsStyle": {
+              "mode": "dashed+area"
+            }
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "red",
+                "value": null
+              },
+              {
+                "color": "#EAB839",
+                "value": 20
+              },
+              {
+                "color": "green",
+                "value": 45
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "id": 6
+    },
+    {
+      "type": "timeseries",
+      "title": "Light",
+      "description": "Relative light level from the Grove light sensor, not lux.",
+      "datasource": {
+        "type": "frser-sqlite-datasource",
+        "uid": "plantpulse-sqlite"
+      },
+      "gridPos": {
+        "x": 12,
+        "y": 5,
+        "w": 12,
+        "h": 9
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "frser-sqlite-datasource",
+            "uid": "plantpulse-sqlite"
+          },
+          "queryType": "time series",
+          "queryText": "SELECT timestamp AS time, light_pct AS \"Light\" FROM readings\nWHERE device_id = '$device'\n  AND timestamp >= ${__from:date:seconds} AND timestamp <= ${__to:date:seconds}\nORDER BY timestamp",
+          "rawQueryText": "SELECT timestamp AS time, light_pct AS \"Light\" FROM readings\nWHERE device_id = '$device'\n  AND timestamp >= ${__from:date:seconds} AND timestamp <= ${__to:date:seconds}\nORDER BY timestamp",
+          "timeColumns": [
+            "time"
+          ]
+        }
+      ],
+      "options": {
+        "legend": {
+          "showLegend": false,
+          "displayMode": "list",
+          "placement": "bottom"
+        },
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percent",
+          "decimals": 1,
+          "min": 0,
+          "max": 100,
+          "color": {
+            "mode": "fixed",
+            "fixedColor": "#2a78d6"
+          },
+          "custom": {
+            "drawStyle": "line",
+            "lineWidth": 2,
+            "lineInterpolation": "linear",
+            "fillOpacity": 8,
+            "gradientMode": "none",
+            "showPoints": "never",
+            "pointSize": 4,
+            "spanNulls": false,
+            "insertNulls": 900000,
+            "axisPlacement": "auto",
+            "axisLabel": "",
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "#2a78d6",
+                "value": null
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "id": 7
+    },
+    {
+      "type": "timeseries",
+      "title": "Air temperature",
+      "description": "Air temperature next to the plant (DHT sensor).",
+      "datasource": {
+        "type": "frser-sqlite-datasource",
+        "uid": "plantpulse-sqlite"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 14,
+        "w": 12,
+        "h": 9
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "frser-sqlite-datasource",
+            "uid": "plantpulse-sqlite"
+          },
+          "queryType": "time series",
+          "queryText": "SELECT timestamp AS time, temperature_c AS \"Air temperature\" FROM readings\nWHERE device_id = '$device'\n  AND timestamp >= ${__from:date:seconds} AND timestamp <= ${__to:date:seconds}\nORDER BY timestamp",
+          "rawQueryText": "SELECT timestamp AS time, temperature_c AS \"Air temperature\" FROM readings\nWHERE device_id = '$device'\n  AND timestamp >= ${__from:date:seconds} AND timestamp <= ${__to:date:seconds}\nORDER BY timestamp",
+          "timeColumns": [
+            "time"
+          ]
+        }
+      ],
+      "options": {
+        "legend": {
+          "showLegend": false,
+          "displayMode": "list",
+          "placement": "bottom"
+        },
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "celsius",
+          "decimals": 1,
+          "min": null,
+          "max": null,
+          "color": {
+            "mode": "fixed",
+            "fixedColor": "#2a78d6"
+          },
+          "custom": {
+            "drawStyle": "line",
+            "lineWidth": 2,
+            "lineInterpolation": "linear",
+            "fillOpacity": 8,
+            "gradientMode": "none",
+            "showPoints": "never",
+            "pointSize": 4,
+            "spanNulls": false,
+            "insertNulls": 900000,
+            "axisPlacement": "auto",
+            "axisLabel": "",
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "#2a78d6",
+                "value": null
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "id": 8
+    },
+    {
+      "type": "timeseries",
+      "title": "Air humidity",
+      "description": "Relative air humidity next to the plant (DHT sensor). Context only.",
+      "datasource": {
+        "type": "frser-sqlite-datasource",
+        "uid": "plantpulse-sqlite"
+      },
+      "gridPos": {
+        "x": 12,
+        "y": 14,
+        "w": 12,
+        "h": 9
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "frser-sqlite-datasource",
+            "uid": "plantpulse-sqlite"
+          },
+          "queryType": "time series",
+          "queryText": "SELECT timestamp AS time, humidity_pct AS \"Air humidity\" FROM readings\nWHERE device_id = '$device'\n  AND timestamp >= ${__from:date:seconds} AND timestamp <= ${__to:date:seconds}\nORDER BY timestamp",
+          "rawQueryText": "SELECT timestamp AS time, humidity_pct AS \"Air humidity\" FROM readings\nWHERE device_id = '$device'\n  AND timestamp >= ${__from:date:seconds} AND timestamp <= ${__to:date:seconds}\nORDER BY timestamp",
+          "timeColumns": [
+            "time"
+          ]
+        }
+      ],
+      "options": {
+        "legend": {
+          "showLegend": false,
+          "displayMode": "list",
+          "placement": "bottom"
+        },
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percent",
+          "decimals": 1,
+          "min": 0,
+          "max": 100,
+          "color": {
+            "mode": "fixed",
+            "fixedColor": "#2a78d6"
+          },
+          "custom": {
+            "drawStyle": "line",
+            "lineWidth": 2,
+            "lineInterpolation": "linear",
+            "fillOpacity": 8,
+            "gradientMode": "none",
+            "showPoints": "never",
+            "pointSize": 4,
+            "spanNulls": false,
+            "insertNulls": 900000,
+            "axisPlacement": "auto",
+            "axisLabel": "",
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "#2a78d6",
+                "value": null
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "id": 9
+    }
+  ]
+}

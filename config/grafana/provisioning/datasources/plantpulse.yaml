@@ -1,0 +1,16 @@
+# Grafana data source for the PlantPulse SQLite database (T-31, decision 002).
+# scripts/setup_grafana.sh copies this file to /etc/grafana/provisioning/datasources/
+# and replaces __REPO__ with the path of this repository on the Pi.
+apiVersion: 1
+
+datasources:
+  - name: PlantPulse SQLite
+    uid: plantpulse-sqlite
+    type: frser-sqlite-datasource
+    access: proxy
+    isDefault: true
+    editable: false
+    jsonData:
+      path: __REPO__/data/plantpulse.db
+      # Grafana only reads; the MQTT subscriber (T-22) is the only writer
+      pathOptions: mode=ro

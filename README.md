@@ -144,6 +144,10 @@ python -m plantpulse.storage                        # creates data/plantpulse.db
 sqlite3 data/plantpulse.db ".schema readings"       # shows the table
 ```
 
+## Grafana (T-31)
+
+The teacher's dashboard, **PlantPulse – plant readings**, shows the current value and the history of the four readings from `data/plantpulse.db`, read-only. Install it on the Pi with `bash scripts/setup_grafana.sh` and open `http://<pi-address>:3000/`. Details, panels and troubleshooting: [config/grafana/README.md](config/grafana/README.md).
+
 ## State screen (US-01)
 
 The signal for pupils is a Grove 16x2 LCD (White on Blue) on an **I2C port** of the Base HAT (address 0x3E). The state is published retained on `plantpulse/school01/plant01/state` (format in `plantpulse/state.py`). `plantpulse/led_service.py` follows that topic and rewrites the screen as soon as a new state arrives: a message on the first row and a 10-cell bar on the second. Normal: "All good", 2 cells; Check: "Check the plant", 5 cells; Attention: "Plant needs help", 10 cells. Fault shows "Sensor problem"; an unreadable message or no state shows "No plant state", never "All good". The printed legend is [docs/led-legend.pdf](docs/led-legend.pdf), drawn by `scripts/make_led_legend.py`.

@@ -1,0 +1,14 @@
+# Load the PlantPulse dashboards straight from the repository (T-31), so a
+# "git pull" on the Pi updates them within a minute. scripts/setup_grafana.sh
+# copies this file to /etc/grafana/provisioning/dashboards/ and replaces __REPO__.
+apiVersion: 1
+
+providers:
+  - name: PlantPulse
+    folder: PlantPulse
+    type: file
+    disableDeletion: true
+    allowUiUpdates: false
+    updateIntervalSeconds: 60
+    options:
+      path: __REPO__/config/grafana/dashboards
